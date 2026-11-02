@@ -1,0 +1,1167 @@
+<!doctype html><html><head><meta charset=utf8><meta name=viewport content="width=device-width,initial-scale=1,viewport-fit=cover"><style>:root{color-scheme:light;box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}html{scroll-padding-top:env(safe-area-inset-top,0px)}body{margin:0;padding:0;font:14px -apple-system,BlinkMacSystemFont,sans-serif;background:#fff;color:#000}img{max-width:100%}[hidden]:not([hidden=until-found i]){display:none!important}</style></head><body>
+<title>AI Start</title>
+<meta name="claude:viewport-fit-sides" content="cover">
+<style>:root{color-scheme:light;box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}html{scroll-padding-top:env(safe-area-inset-top,0px)}body{margin:0;padding:0;font:14px -apple-system,BlinkMacSystemFont,sans-serif;background:#fff;color:#000}img{max-width:100%}[hidden]:not([hidden=until-found i]){display:none!important}/* жаңа тапсырма түрлері + Robo чаты */
+.mt{display:grid;grid-template-columns:1fr 1fr;gap:10px}.mt>div{display:flex;flex-direction:column;gap:8px}.mt .opt.used{opacity:.55}.mt .as{margin-left:auto;font-weight:800;color:var(--lilac-deep)}
+.tfl{display:flex;flex-direction:column;gap:8px}.tfr{display:flex;gap:10px;align-items:center;justify-content:space-between;flex-wrap:wrap;border:2px solid var(--line);border-radius:14px;padding:10px 12px}.tfr>span:first-child{flex:1 1 220px}.tfb{display:flex;gap:6px}
+.chip.good{border-color:var(--good);background:var(--good-soft)}.chip.bad{border-color:var(--bad);background:var(--bad-soft)}
+@media(max-width:560px){.mt{grid-template-columns:1fr}}
+#robo{position:fixed;right:max(16px,env(safe-area-inset-right,0px));bottom:calc(env(safe-area-inset-bottom,0px) + 16px);z-index:40;display:flex;flex-direction:column;align-items:flex-end;gap:10px}
+#robob{width:66px;height:66px;border-radius:50%;border:2px solid var(--blue);background:var(--surface);cursor:pointer;display:grid;place-items:center;padding:0;box-shadow:0 10px 24px -8px var(--shadow)}#robob .robot{width:44px}
+#robop{width:min(380px,calc(100vw - 32px));height:min(540px,calc(100vh - 150px));display:flex;flex-direction:column;background:var(--surface);border:2px solid var(--line);border-radius:20px;box-shadow:0 20px 50px -16px var(--shadow);overflow:hidden}
+.rh{display:flex;align-items:center;gap:10px;padding:8px 14px;background:var(--blue);color:#fff;font:800 1.05rem var(--f-body)}.rh .robot{width:30px;background:#fff;border-radius:10px;padding:2px}.rh button{margin-left:auto;border:0;background:transparent;color:#fff;font-size:1.1rem;cursor:pointer}
+#rmsgs{flex:1;overflow-y:auto;padding:12px;display:flex;flex-direction:column;gap:8px}
+.rm{max-width:86%;padding:8px 12px;border-radius:14px;white-space:pre-wrap;overflow-wrap:anywhere;font-size:.95rem}.rm.b{background:var(--blue-soft);align-self:flex-start}.rm.u{background:var(--solid);color:var(--on-solid);align-self:flex-end}
+.rq{display:flex;flex-wrap:wrap;gap:6px;padding:0 12px 8px}.rq .chip{font-size:.8rem;padding:6px 10px}
+.rf{display:flex;gap:8px;padding:10px;border-top:2px solid var(--line)}.rf input{flex:1;min-width:0;border:2px solid var(--line);border-radius:999px;padding:8px 14px;font:inherit;background:var(--bg);color:var(--ink)}
+</style></head><body>
+
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Lora:ital,wght@0,600;0,700;1,600&family=Nunito:wght@500;600;700;800&display=swap">
+<style>
+/* Layout: ойын-лабиринт. Басты бетте таныстыру + бүйір панелі бар тігінен иілген лабиринт карта;
+   сабақ беті төрт қадамнан тұрады (теория, видео, практика, тест), оң жақта робот-нұсқаушы. */
+:root{
+  --bg:#f5f7ff; --surface:#ffffff; --ink:#142044; --muted:#5a6788; --line:#d9e1f4;
+  --blue:#2f74b8; --blue-deep:#1c4f8c; --blue-soft:#e2eefb;
+  --lilac:#b8a6f2; --lilac-deep:#6f55d8; --lilac-soft:#ece8fb;
+  --pill:#d6e0f2; --solid:#1f5a9e; --on-solid:#ffffff;
+  --good:#1c9a68; --good-soft:#dff5ec; --bad:#d23f5d; --bad-soft:#fde5ea;
+  --lock:#b9c3dd;--tcard:#3a7fb8;--board-a:#2f74b8;--board-b:#6a5bd0;--lane:#eef2ff; --grid:rgba(47,116,184,.10); --shadow:rgba(28,79,140,.28);
+  --f-display:'Lora',Georgia,'Times New Roman',serif;
+  --f-body:'Nunito','Segoe UI',system-ui,-apple-system,sans-serif;
+}
+@media (prefers-color-scheme: dark){
+  :root:not([data-theme="light"]){
+    --bg:#0d1330; --surface:#161f47; --ink:#eaf0ff; --muted:#a4b1d8; --line:#2b3a6f;
+    --blue:#6aa8f0; --blue-deep:#8dbbf5; --blue-soft:#1a2c5a;
+    --lilac:#8c7be6; --lilac-deep:#b7a9ff; --lilac-soft:#251f55;
+    --pill:#243a72; --solid:#5b95e6; --on-solid:#0b1233;
+    --good:#4cd6a0; --good-soft:#12382f; --bad:#ff7d97; --bad-soft:#40202e;
+    --lock:#3a4678;--tcard:#27549a;--board-a:#1b3d78;--board-b:#3e3a94;--lane:#2a3a78; --grid:rgba(106,168,240,.12); --shadow:rgba(0,0,0,.5);
+    color-scheme:dark;
+  }
+}
+:root[data-theme="dark"]{
+  --bg:#0d1330; --surface:#161f47; --ink:#eaf0ff; --muted:#a4b1d8; --line:#2b3a6f;
+  --blue:#6aa8f0; --blue-deep:#8dbbf5; --blue-soft:#1a2c5a;
+  --lilac:#8c7be6; --lilac-deep:#b7a9ff; --lilac-soft:#251f55;
+  --pill:#243a72; --solid:#5b95e6; --on-solid:#0b1233;
+  --good:#4cd6a0; --good-soft:#12382f; --bad:#ff7d97; --bad-soft:#40202e;
+  --lock:#3a4678;--tcard:#27549a;--board-a:#1b3d78;--board-b:#3e3a94;--lane:#2a3a78; --grid:rgba(106,168,240,.12); --shadow:rgba(0,0,0,.5);
+  color-scheme:dark;
+}
+*{box-sizing:border-box}
+html{scroll-behavior:smooth}
+body{background:var(--bg);color:var(--ink);font-family:var(--f-body);font-size:16px;line-height:1.55;
+  padding-left:max(16px,env(safe-area-inset-left,0px));padding-right:max(16px,env(safe-area-inset-right,0px));padding-block:0;position:relative}
+body::before{content:"";position:fixed;inset:0 0 auto;height:env(safe-area-inset-top,0px);z-index:30;background:var(--bg)}
+#bg{position:fixed;inset:0;width:100%;height:100%;z-index:0;pointer-events:none}
+#shell{position:relative;z-index:1;max-width:1120px;margin:0 auto;padding-bottom:40px}
+h1,h2,h3,h4,p{margin:0}
+button{font-family:inherit}
+.muted{color:var(--muted)}
+
+/* header */
+.top{position:sticky;top:env(safe-area-inset-top,0px);z-index:20;display:flex;align-items:center;gap:10px;padding:12px 0;
+  background:color-mix(in srgb,var(--bg) 85%,transparent);backdrop-filter:blur(10px)}
+.logo{display:flex;align-items:center;gap:10px;background:none;border:0;cursor:pointer;color:var(--blue-deep);font:700 1.5rem var(--f-display);padding:0}
+.logo .lg{width:38px;height:38px;border-radius:12px;background:var(--blue);display:grid;place-items:center}
+.logo .lg svg{width:26px;height:26px}
+.sp{flex:1}
+.pill{display:inline-flex;align-items:center;gap:8px;border:2px solid var(--line);background:var(--surface);color:var(--ink);border-radius:999px;padding:6px 14px;font:800 .85rem var(--f-body)}
+.pill b{color:var(--blue-deep)}
+.auth{margin-top:6px;font-weight:800;color:var(--blue-deep)}
+.vbtnrow{margin:0 0 14px}#vwrap{margin-bottom:18px}
+.iconbtn{cursor:pointer}
+.iconbtn:hover{border-color:var(--blue)}
+.iconbtn svg{width:18px;height:18px;stroke:currentColor;fill:none;stroke-width:2;stroke-linecap:round;stroke-linejoin:round}
+
+/* buttons */
+.btn{font:800 .85rem var(--f-body);letter-spacing:.06em;text-transform:uppercase;border:2px solid var(--blue-deep);background:var(--pill);color:var(--blue-deep);
+  padding:.8rem 1.5rem;border-radius:999px;cursor:pointer;transition:transform .15s,box-shadow .15s;text-decoration:none;display:inline-flex;align-items:center;justify-content:center;gap:8px}
+.btn:hover{transform:translateY(-2px);box-shadow:0 10px 18px -10px var(--shadow)}
+.btn:focus-visible,.opt:focus-visible,.chip:focus-visible,.node:focus-visible{outline:3px solid var(--lilac-deep);outline-offset:2px}
+.btn.solid{background:var(--solid);border-color:var(--solid);color:var(--on-solid)}
+.btn.small{padding:.5rem 1rem;font-size:.75rem}
+.btn[disabled]{opacity:.45;cursor:not-allowed;transform:none;box-shadow:none}
+.btn.ghost{background:transparent}
+
+/* hero */
+.hero{display:grid;grid-template-columns:1.1fr .9fr;gap:24px;align-items:center;padding:28px 0 18px}
+.eyebrow{font:800 .8rem var(--f-body);letter-spacing:.14em;text-transform:uppercase;color:var(--lilac-deep)}
+.hero h1{font:700 clamp(3.4rem,10vw,6.2rem)/1 var(--f-display);color:var(--blue-deep);margin:10px 0 14px;letter-spacing:-.01em}
+.hero h1 span{background:linear-gradient(transparent 62%,var(--lilac-soft) 62%);padding:0 .08em}
+.lead{font-size:1.15rem;max-width:34em;color:var(--ink)}
+.cta{display:flex;flex-wrap:wrap;gap:12px;margin-top:22px}
+.rstage{position:relative;display:grid;place-items:center;min-width:0;padding:10px}
+.rstage::before{content:"";position:absolute;inset:6% 8%;border-radius:50%;background:var(--lilac-soft);animation:breathe 6s ease-in-out infinite}
+.rstage::after{content:"";position:absolute;inset:2% 4%;border-radius:50%;border:3px dashed var(--lilac);opacity:.7;animation:spin 40s linear infinite}
+.rstage .robot{position:relative;width:min(58%,230px);z-index:2}
+.bubble{position:relative;z-index:3;background:var(--surface);border:2px solid var(--line);border-radius:22px;padding:14px 18px;font-weight:600;max-width:420px;min-height:92px;box-shadow:0 14px 28px -18px var(--shadow);margin-bottom:6px}
+.bubble::after{content:"";position:absolute;left:50%;bottom:-11px;width:20px;height:20px;background:var(--surface);border-right:2px solid var(--line);border-bottom:2px solid var(--line);transform:translateX(-50%) rotate(45deg)}
+.bnav{display:flex;align-items:center;justify-content:center;gap:8px;position:relative;z-index:3;margin-top:12px}
+.dot{width:9px;height:9px;border-radius:50%;background:var(--line);border:0;padding:0;cursor:pointer}
+.dot.on{background:var(--blue);width:22px;border-radius:6px}
+
+/* robot */
+.robot{display:block;height:auto;overflow:visible}
+.robot.float{animation:floaty 4s ease-in-out infinite}
+.robot .eye{transform-box:fill-box;transform-origin:center;animation:blink 5s infinite}
+.robot .wave{transform-box:view-box;transform-origin:150px 134px;animation:wave 2.4s ease-in-out infinite}
+.robot .ant{animation:pulse 1.8s ease-in-out infinite;transform-box:fill-box;transform-origin:center}
+.robot.talk .mouth{animation:talk .35s ease-in-out infinite;transform-box:fill-box;transform-origin:center}
+
+/* sections */
+section{padding:30px 0}
+.sh{margin-bottom:18px}
+.sh h2{font:700 clamp(1.7rem,4vw,2.4rem)/1.15 var(--f-display);color:var(--blue-deep);border-bottom:2px solid var(--line);padding-bottom:8px;text-wrap:balance}
+.sh p{margin-top:8px;color:var(--muted);max-width:46em}
+.flow{display:grid;grid-template-columns:repeat(4,1fr);gap:14px;list-style:none;margin:0;padding:0;counter-reset:f}
+.flow li{background:var(--surface);border:2px solid var(--line);border-radius:20px;padding:16px;display:flex;flex-direction:column;gap:6px;position:relative;min-width:0}
+.flow li:not(:last-child)::after{content:"→";position:absolute;right:-14px;top:50%;transform:translateY(-50%);font:800 1.1rem var(--f-body);color:var(--lilac-deep);z-index:2;background:var(--bg);width:14px;text-align:center}
+.flow .fi{width:46px;height:46px;border-radius:14px;background:var(--blue);display:grid;place-items:center;color:#fff}
+.flow .fi svg{width:30px;height:30px;stroke:#fff;fill:none;stroke-width:4;stroke-linecap:round;stroke-linejoin:round}
+.flow h3{font:800 1.05rem var(--f-body);color:var(--blue-deep)}
+.flow p{font-size:.9rem;color:var(--muted)}
+
+/* map */
+.mapwrap{display:grid;grid-template-columns:minmax(0,1fr) 340px;gap:26px;align-items:start}
+.mapbox{background:var(--surface);border:2px solid var(--line);border-radius:28px;padding:16px 8px;display:grid;place-items:center;min-width:0}
+.mapsvg{width:100%;max-width:440px;height:auto;display:block}
+.mapsvg text{font-family:var(--f-body)}
+.node{cursor:pointer;outline:none}
+.node .circ{transition:transform .2s;transform-box:fill-box;transform-origin:center}
+.node:hover .circ,.node:focus-visible .circ{transform:scale(1.08)}
+.pulse{fill:none;stroke:var(--lilac-deep);stroke-width:3;transform-box:fill-box;transform-origin:center;animation:ring 2s ease-out infinite}
+.bob{animation:bob 1.2s ease-in-out infinite}
+.side{position:sticky;top:calc(env(safe-area-inset-top,0px) + 72px);display:flex;flex-direction:column;gap:16px;min-width:0}
+.pcard{background:var(--surface);border:2px solid var(--line);border-radius:24px;padding:18px;display:flex;gap:16px;align-items:center}
+.ring{width:84px;height:84px;flex:none}
+.ring text{font:800 20px var(--f-body);fill:var(--blue-deep)}
+.tcard{background:var(--blue);color:#fff;border-radius:20px;padding:18px;display:flex;flex-direction:column;gap:14px}
+:root[data-theme="dark"] .tcard{background:#27549a}
+@media (prefers-color-scheme: dark){:root:not([data-theme="light"]) .tcard{background:#27549a}}
+.tcard .trow{display:flex;gap:12px;align-items:flex-start}
+.tcard h3{font:700 1.2rem/1.25 var(--f-display);font-style:italic}
+.tcard .btn{background:#d6e0f2;color:#1c4f8c;border-color:#1c4f8c}
+.num{flex:none;width:34px;height:34px;border-radius:10px;background:#fff;color:#142044;font:800 1.05rem var(--f-body);display:grid;place-items:center}
+
+/* lesson */
+.lbar{display:flex;align-items:center;gap:14px;flex-wrap:wrap;padding:8px 0 14px}
+.ltitle{display:flex;align-items:center;gap:12px;min-width:0}
+.ltitle .num{background:var(--blue);color:#fff;width:40px;height:40px;border-radius:12px}
+.ltitle h2{font:700 clamp(1.4rem,3.4vw,2rem)/1.2 var(--f-display);color:var(--blue-deep);text-wrap:balance}
+.stepper{display:flex;gap:0;list-style:none;margin:0 0 18px;padding:0}
+.stepper li{flex:1;display:flex;flex-direction:column;align-items:center;gap:6px;position:relative;font:800 .78rem var(--f-body);letter-spacing:.06em;text-transform:uppercase;color:var(--muted);text-align:center;min-width:0}
+.stepper li::before{content:"";position:absolute;top:15px;left:-50%;width:100%;height:4px;background:var(--line);z-index:0;border-radius:2px}
+.stepper li:first-child::before{display:none}
+.stepper li.done::before,.stepper li.on::before{background:var(--blue)}
+.stepper .sd{width:34px;height:34px;border-radius:50%;background:var(--surface);border:3px solid var(--line);display:grid;place-items:center;z-index:1;font-size:.9rem;color:var(--muted)}
+.stepper li.on .sd{border-color:var(--blue);color:var(--blue-deep);box-shadow:0 0 0 5px var(--blue-soft)}
+.stepper li.done .sd{background:var(--blue);border-color:var(--blue);color:#fff}
+.stepper li.on,.stepper li.done{color:var(--blue-deep)}
+.lgrid{display:grid;grid-template-columns:minmax(0,1fr) 250px;gap:22px;align-items:start}
+.lmain{min-width:0}
+.coach{position:sticky;top:calc(env(safe-area-inset-top,0px) + 72px);display:flex;flex-direction:column;align-items:center;gap:10px}
+.coach .robot{width:120px}
+.coach .bubble{min-height:0;font-size:.92rem;padding:12px 14px}
+.lnav{display:flex;justify-content:space-between;gap:12px;margin-top:22px;flex-wrap:wrap}
+.card{background:var(--surface);border:2px solid var(--line);border-radius:24px;padding:22px}
+
+.theory{display:grid;grid-template-columns:minmax(0,.9fr) minmax(0,1.1fr);gap:22px;align-items:start}
+.scene{position:relative;border-radius:28px;aspect-ratio:1/1;background:linear-gradient(150deg,var(--blue-soft),var(--lilac-soft));overflow:hidden;border:2px solid var(--line);max-width:100%}
+.scene::before,.scene::after{content:"";position:absolute;border-radius:50%;background:var(--lilac);opacity:.28;animation:floaty 7s ease-in-out infinite}
+.scene::before{width:42%;height:42%;left:-10%;top:-8%}
+.scene::after{width:30%;height:30%;right:-6%;bottom:12%;background:var(--blue);animation-delay:-3s}
+.scene .pic{position:absolute;inset:12% 24% 28% 10%;z-index:2}
+.scene .rb{position:absolute;right:3%;bottom:2%;width:34%;z-index:3}
+.scene .tag{position:absolute;z-index:4;background:var(--surface);border:2px solid var(--line);border-radius:999px;padding:4px 12px;font:800 .78rem var(--f-body);color:var(--blue-deep);animation:floaty 5s ease-in-out infinite}
+.pic svg{width:100%;height:100%;display:block;color:var(--blue-deep);fill:none;stroke:currentColor;stroke-width:4;stroke-linecap:round;stroke-linejoin:round}
+.pic svg *{stroke-dasharray:1;stroke-dashoffset:1;animation:draw 1.4s .1s ease forwards}
+.tcol{display:flex;flex-direction:column;gap:14px;min-width:0}
+.tcol .lead{font-size:1.08rem}
+.pt{border-left:5px solid var(--lilac);background:var(--surface);border-radius:4px 16px 16px 4px;padding:10px 14px}
+.pt h4{font:800 .98rem var(--f-body);color:var(--blue-deep)}
+.pt p{font-size:.96rem}
+.terms{display:grid;grid-template-columns:repeat(auto-fit,minmax(200px,1fr));gap:8px}
+.term{background:var(--blue-soft);border-radius:14px;padding:8px 12px}
+.term b{display:block;color:var(--blue-deep);font-size:.95rem}
+.term span{font-size:.85rem;color:var(--muted)}
+.fact{background:var(--lilac-soft);border-radius:18px;padding:12px 16px;font-weight:600;display:flex;gap:12px;align-items:flex-start}
+.fact i{flex:none;font:800 .75rem var(--f-body);font-style:normal;letter-spacing:.1em;text-transform:uppercase;color:var(--lilac-deep);padding-top:3px}
+pre{margin:0;background:#12204f;color:#d9e6ff;border-radius:14px;padding:12px 14px;overflow-x:auto;font:600 .82rem/1.55 ui-monospace,Menlo,Consolas,monospace}
+
+.lab{background:var(--surface);border:2px solid var(--line);border-radius:22px;padding:16px;display:flex;flex-direction:column;gap:12px}
+.lab h4{font:800 1rem var(--f-body);color:var(--blue-deep)}
+.lab .sl{display:grid;grid-template-columns:repeat(auto-fit,minmax(120px,1fr));gap:10px}
+.lab label{font:800 .8rem var(--f-body);color:var(--muted);display:flex;flex-direction:column;gap:2px}
+.lab label b{color:var(--ink);font-size:.95rem}
+.lab input[type=range]{width:100%;accent-color:var(--lilac-deep)}
+.lab select,.fld input,.fld textarea,.tin{font:600 1rem var(--f-body);color:var(--ink);background:var(--bg);border:2px solid var(--line);border-radius:12px;padding:9px 12px;width:100%}
+.lab svg{width:100%;height:auto;max-height:200px}
+.lab svg text{font:800 13px var(--f-body);fill:var(--ink)}
+.res{font-weight:800;color:var(--blue-deep)}
+
+/* video */
+.stage{position:relative;border-radius:28px;overflow:hidden;min-height:340px;display:grid;place-items:center;text-align:center;padding:26px 22px 60px;border:2px solid var(--line);
+  background-color:var(--blue-soft);
+  background-image:linear-gradient(var(--grid) 1px,transparent 1px),linear-gradient(90deg,var(--grid) 1px,transparent 1px),radial-gradient(circle at 20% 15%,var(--lilac-soft),transparent 55%),radial-gradient(circle at 85% 85%,var(--blue-soft),transparent 55%);
+  background-size:38px 38px,38px 38px,100% 100%,100% 100%;animation:grid 8s linear infinite}
+.stage .sc{display:flex;flex-direction:column;align-items:center;gap:10px;max-width:520px;animation:fadein .6s ease both}
+.stage .pic{width:150px;height:150px}
+.stage h3{font:700 clamp(1.4rem,3.5vw,1.9rem)/1.2 var(--f-display);color:var(--blue-deep)}
+.stage p{font-size:1.05rem;font-weight:600}
+.stage .vr{position:absolute;left:14px;bottom:50px;width:62px}
+.vctl{display:flex;align-items:center;gap:12px;margin-top:12px;flex-wrap:wrap}
+.vbar{flex:1;min-width:140px;height:10px;border-radius:6px;background:var(--line);overflow:hidden;cursor:pointer}
+.vbar i{display:block;height:100%;width:0;background:linear-gradient(90deg,var(--blue),var(--lilac-deep))}
+.vdots{display:flex;gap:6px}
+.extra{margin-top:16px;display:flex;flex-direction:column;gap:8px}
+.extra li{background:var(--surface);border:2px solid var(--line);border-radius:14px;padding:10px 14px;list-style:none}
+.extra ul{margin:0;padding:0;display:flex;flex-direction:column;gap:8px}
+
+/* practice + test */
+.task{background:var(--surface);border:2px solid var(--line);border-radius:22px;padding:18px;margin-bottom:14px;display:flex;flex-direction:column;gap:12px}
+.task.ok{border-color:var(--good)}
+.task.bad{border-color:var(--bad)}
+.task .th{display:flex;gap:12px;align-items:flex-start}
+.task .th .num{background:var(--blue);color:#fff}
+.task .q{font-weight:800;font-size:1.04rem}
+.opts{display:grid;gap:8px}
+.opt{display:flex;gap:10px;align-items:center;text-align:left;width:100%;border:2px solid var(--line);background:var(--bg);color:var(--ink);border-radius:14px;padding:11px 14px;font:700 .98rem var(--f-body);cursor:pointer;transition:border-color .15s,background .15s}
+.opt:hover:not([disabled]){border-color:var(--blue)}
+.opt.sel{border-color:var(--blue);background:var(--blue-soft)}
+.opt.ok{border-color:var(--good);background:var(--good-soft)}
+.opt.bad{border-color:var(--bad);background:var(--bad-soft);animation:shake .4s}
+.opt .mk{flex:none;width:26px;height:26px;border-radius:8px;border:2px solid var(--line);display:grid;place-items:center;font-size:.8rem;color:var(--muted)}
+.tin{max-width:260px}
+.pool,.oline{display:flex;flex-wrap:wrap;gap:8px}
+.chip{border:2px solid var(--blue);background:var(--blue-soft);color:var(--blue-deep);border-radius:12px;padding:8px 12px;font:800 .9rem var(--f-body);cursor:pointer}
+.chip.used{opacity:.3;pointer-events:none}
+.chip.tg{border-color:var(--line);background:var(--bg);color:var(--ink);cursor:pointer}
+.chip.tg.on{border-color:var(--lilac-deep);background:var(--lilac-soft);color:var(--lilac-deep)}
+.oline{min-height:48px;border:2px dashed var(--lilac);border-radius:14px;padding:8px}
+.oitem{display:inline-flex;gap:8px;align-items:center;background:var(--lilac-soft);border-radius:10px;padding:5px 10px;font-weight:800;font-size:.9rem}
+.oitem b{background:var(--lilac-deep);color:#fff;width:22px;height:22px;border-radius:50%;display:grid;place-items:center;font-size:.75rem}
+.acts{display:flex;gap:8px;flex-wrap:wrap}
+.fb{border-radius:14px;padding:10px 14px;font-weight:700;font-size:.95rem}
+.fb.ok{background:var(--good-soft);color:var(--good)}
+.fb.bad{background:var(--bad-soft);color:var(--bad)}
+.fb.info{background:var(--blue-soft);color:var(--blue-deep)}
+.fb small{display:block;color:var(--ink);font-weight:600;font-size:.9rem;margin-top:4px}
+.pstat{display:flex;gap:10px;align-items:center;flex-wrap:wrap;margin:6px 0 14px;font-weight:800}
+.qdots{display:flex;gap:6px;margin-bottom:14px}
+.qdots i{flex:1;height:8px;border-radius:5px;background:var(--line)}
+.qdots i.ok{background:var(--good)}
+.qdots i.bad{background:var(--bad)}
+.qdots i.cur{background:var(--blue)}
+.quiz .q{font:700 clamp(1.2rem,3vw,1.5rem)/1.3 var(--f-display);margin-bottom:14px}
+.score{font:700 4rem/1 var(--f-display);color:var(--blue-deep)}
+.result{text-align:center;display:flex;flex-direction:column;align-items:center;gap:12px;padding:10px 0}
+
+/* business builder */
+.bsteps{display:flex;gap:8px;flex-wrap:wrap;margin-bottom:14px}
+.bsteps .chip.on{background:var(--blue);color:#fff}
+.fld{display:flex;flex-direction:column;gap:6px;margin-bottom:12px}
+.fld label{font:800 .85rem var(--f-body);color:var(--muted)}
+.fld textarea{min-height:76px;resize:vertical}
+.grid2{display:grid;grid-template-columns:repeat(auto-fit,minmax(200px,1fr));gap:12px}
+.kpis{display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:10px;margin:10px 0}
+.kpi{background:var(--blue-soft);border-radius:16px;padding:10px 14px}
+.kpi span{font-size:.8rem;color:var(--muted);font-weight:800;display:block}
+.kpi b{font:700 1.3rem var(--f-display);color:var(--blue-deep)}
+.kpi.neg b{color:var(--bad)}
+.chartbox{overflow-x:auto}
+.chartbox svg{width:100%;min-width:420px;height:auto;display:block}
+.chartbox text{font:700 11px var(--f-body);fill:var(--muted)}
+.plan{background:var(--surface);border:3px solid var(--blue);border-radius:26px;padding:24px;display:flex;flex-direction:column;gap:14px}
+.plan h3{font:700 1.8rem var(--f-display);color:var(--blue-deep)}
+.plan h4{font:800 .8rem var(--f-body);letter-spacing:.1em;text-transform:uppercase;color:var(--lilac-deep)}
+.plan p{white-space:pre-wrap}
+
+/* certificate */
+.cert{max-width:720px;margin:20px auto;background:var(--surface);border:4px double var(--blue);border-radius:26px;padding:34px 22px;text-align:center;display:flex;flex-direction:column;align-items:center;gap:10px;position:relative;overflow:hidden}
+.cert h2{font:700 clamp(2rem,6vw,3rem) var(--f-display);color:var(--blue-deep)}
+.cert .nm{font:italic 600 clamp(1.6rem,5vw,2.4rem) var(--f-display);color:var(--lilac-deep);word-break:break-word}
+.cert .robot{width:120px}
+
+footer{padding:28px 0 8px;text-align:center;color:var(--muted);font-size:.85rem}
+#toast{position:fixed;left:50%;bottom:calc(22px + env(safe-area-inset-bottom,0px));transform:translate(-50%,30px);background:var(--ink);color:var(--bg);padding:10px 18px;border-radius:999px;font-weight:800;font-size:.9rem;opacity:0;pointer-events:none;transition:.3s;z-index:60;max-width:calc(100vw - 32px);text-align:center}
+#toast.on{opacity:1;transform:translate(-50%,0)}
+.cf{position:fixed;top:-20px;width:10px;height:14px;z-index:70;border-radius:2px;animation:fall 2.4s ease-in forwards;pointer-events:none}
+
+.orb{position:absolute;z-index:3;width:62px;height:62px;border-radius:50%;background:var(--surface);border:2px solid var(--line);display:grid;place-items:center;box-shadow:0 14px 24px -14px var(--shadow);animation:floaty 5s ease-in-out infinite}
+.orb .pic{width:34px;height:34px}
+.rstage{min-height:470px;align-content:center}
+.marq{overflow:hidden;border:2px solid var(--line);background:var(--surface);margin:18px 0;border-radius:18px}
+.mq{display:flex;gap:34px;width:max-content;padding:13px 0;animation:marq 40s linear infinite;font:italic 600 1.1rem var(--f-display);color:var(--blue-deep)}
+.mq span{display:flex;align-items:center;gap:34px;white-space:nowrap}
+.mq span::after{content:"";width:9px;height:9px;border-radius:3px;background:var(--lilac);transform:rotate(45deg)}
+.stats{display:grid;grid-template-columns:repeat(3,1fr);gap:14px;padding:10px 0}
+.st{background:var(--surface);border:2px solid var(--line);border-radius:22px;padding:16px;text-align:center}
+.st b{display:block;font:700 clamp(2rem,5vw,3rem)/1 var(--f-display);color:var(--blue-deep)}
+.st span{font-weight:800;font-size:.88rem;color:var(--muted)}
+.tgrid{display:grid;grid-template-columns:repeat(auto-fill,minmax(240px,1fr));gap:14px}
+.tc{text-align:left;cursor:pointer;border:0;background:var(--tcard);color:#fff;border-radius:20px;padding:16px;display:flex;flex-direction:column;gap:10px;font-family:var(--f-body);transition:transform .2s,box-shadow .2s;min-width:0}
+.tc:hover{transform:translateY(-5px) rotate(-.6deg);box-shadow:0 18px 26px -18px var(--shadow)}
+.tc:focus-visible{outline:3px solid var(--lilac-deep);outline-offset:2px}
+.tc .trow{display:flex;gap:12px;align-items:flex-start}
+.tc h3{font:700 1.12rem/1.25 var(--f-display);font-style:italic}
+.tc p{font-size:.88rem;opacity:.92}
+.tc .ok{margin-left:auto;background:var(--good);border-radius:50%;width:24px;height:24px;display:grid;place-items:center;font-size:.8rem;flex:none}
+.band{display:flex;align-items:center;gap:22px;flex-wrap:wrap;justify-content:center;text-align:center;border-radius:30px;padding:30px 20px;background:linear-gradient(120deg,var(--blue-soft),var(--lilac-soft));border:2px solid var(--line);margin:18px 0}
+.band h2{font:700 clamp(1.6rem,4vw,2.3rem)/1.15 var(--f-display);color:var(--blue-deep);text-wrap:balance}
+.band .robot{width:110px}
+.mz h1{font:700 clamp(2.2rem,6vw,3.6rem)/1.05 var(--f-display);color:var(--blue-deep);margin:6px 0}
+.mzhead{display:flex;justify-content:space-between;align-items:center;gap:18px;flex-wrap:wrap;padding:14px 0 8px}
+.mzprog{display:flex;align-items:center;gap:12px}
+.segs{display:grid;grid-template-columns:repeat(8,1fr);gap:8px;margin:6px 0 14px}
+.sg{border:0;border-radius:12px;padding:9px 0;font:800 .95rem var(--f-body);cursor:pointer;background:var(--line);color:var(--muted)}
+.sg.dn{background:var(--good);color:#fff}
+.sg.cu{background:var(--blue);color:#fff;box-shadow:0 0 0 4px var(--blue-soft)}
+.sg:focus-visible{outline:3px solid var(--lilac-deep);outline-offset:2px}
+.board{position:relative;border-radius:34px;padding:14px;overflow:hidden;background:radial-gradient(rgba(255,255,255,.16) 1.6px,transparent 1.8px) 0 0/28px 28px,linear-gradient(135deg,var(--board-a),var(--board-b));box-shadow:0 30px 50px -32px var(--shadow)}
+.board::before{content:"";position:absolute;width:60%;aspect-ratio:1;border-radius:50%;background:rgba(255,255,255,.09);top:-30%;left:-10%;animation:drift 14s ease-in-out infinite alternate}
+.board svg{position:relative;width:100%;height:auto;display:block;margin:0 auto}
+.board svg.nar{max-width:440px}
+.wl{fill:rgba(255,255,255,.13);stroke:rgba(255,255,255,.28);stroke-width:2}
+.wtx{fill:rgba(255,255,255,.35);font:800 30px var(--f-display);letter-spacing:.3em}
+.lane{fill:none;stroke:var(--lane);stroke-linecap:round;stroke-linejoin:round}
+.dash{fill:none;stroke:var(--lilac);stroke-linecap:round;stroke-dasharray:3 13}
+.lit{fill:none;stroke:var(--good);stroke-linecap:round;filter:drop-shadow(0 0 6px var(--good))}
+.cap{fill:#d8d0ff;font:800 10.5px var(--f-body);letter-spacing:.14em}
+.lbl{fill:#fff;font:800 15px var(--f-body)}
+.lk{opacity:.7}
+.mkc{fill:#fff;font:800 11px var(--f-body);letter-spacing:.14em}
+.sg.shk,.node.shk .circ{animation:shake .45s}
+.mzfoot{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1fr);gap:16px;margin-top:16px;align-items:stretch}
+.legend{display:flex;flex-wrap:wrap;gap:8px 18px;align-content:center;font-weight:800;font-size:.9rem;background:var(--surface);border:2px solid var(--line);border-radius:20px;padding:16px}
+.legend i{display:inline-block;width:14px;height:14px;border-radius:50%;margin-right:6px;vertical-align:-2px}
+@keyframes drift{to{transform:translate(30%,25%) scale(1.2)}}
+@keyframes marq{to{transform:translateX(-50%)}}
+@media (max-width:700px){.stats{grid-template-columns:1fr 1fr}.mzfoot{grid-template-columns:1fr}.orb{width:48px;height:48px}.orb .pic{width:26px;height:26px}.rstage{min-height:420px}.segs{gap:5px}}
+@keyframes floaty{0%,100%{transform:translateY(0)}50%{transform:translateY(-10px)}}
+@keyframes breathe{0%,100%{transform:scale(1)}50%{transform:scale(1.05)}}
+@keyframes spin{to{transform:rotate(360deg)}}
+@keyframes blink{0%,92%,100%{transform:scaleY(1)}95%{transform:scaleY(.1)}}
+@keyframes wave{0%,100%{transform:rotate(0)}50%{transform:rotate(-22deg)}}
+@keyframes pulse{0%,100%{transform:scale(1);opacity:1}50%{transform:scale(1.35);opacity:.6}}
+@keyframes talk{0%,100%{transform:scaleY(1)}50%{transform:scaleY(1.9)}}
+@keyframes ring{0%{transform:scale(1);opacity:.9}100%{transform:scale(1.7);opacity:0}}
+@keyframes bob{0%,100%{transform:translateY(0)}50%{transform:translateY(-7px)}}
+@keyframes draw{to{stroke-dashoffset:0}}
+@keyframes fadein{from{opacity:0;transform:translateY(14px)}to{opacity:1;transform:none}}
+@keyframes grid{to{background-position:38px 38px,38px 38px,0 0,0 0}}
+@keyframes shake{0%,100%{transform:translateX(0)}25%{transform:translateX(-7px)}75%{transform:translateX(7px)}}
+@keyframes fall{to{transform:translateY(110vh) rotate(540deg);opacity:.8}}
+
+@media (max-width:860px){
+  .hero{grid-template-columns:1fr}
+  .mapwrap{grid-template-columns:1fr}
+  .side{position:static;order:-1}
+  .lgrid{grid-template-columns:1fr}
+  .coach{position:static;flex-direction:row;align-items:center}
+  .coach .robot{width:80px;flex:none}
+  .theory{grid-template-columns:1fr}
+  .flow{grid-template-columns:1fr 1fr}
+  .flow li:not(:last-child)::after{display:none}
+  .scene{aspect-ratio:4/3}
+  .stepper li{font-size:.62rem}
+}
+@media (max-width:480px){.flow{grid-template-columns:1fr}.pill .lbl{display:none}}
+@media (prefers-reduced-motion: reduce){
+  *,*::before,*::after{animation:none!important;transition:none!important;scroll-behavior:auto!important}
+  .pic svg *{stroke-dashoffset:0!important}
+}
+</style>
+
+<svg width="0" height="0" style="position:absolute" aria-hidden="true"><defs>
+<radialGradient id="gHead" cx="35%" cy="25%" r="85%"><stop offset="0" stop-color="#ffffff"/><stop offset=".55" stop-color="#d4e3fb"/><stop offset="1" stop-color="#86abe4"/></radialGradient>
+<radialGradient id="gBody" cx="35%" cy="25%" r="90%"><stop offset="0" stop-color="#ffffff"/><stop offset=".5" stop-color="#cfe0fa"/><stop offset="1" stop-color="#7f9fdb"/></radialGradient>
+<radialGradient id="gLil" cx="35%" cy="30%" r="80%"><stop offset="0" stop-color="#f1ecff"/><stop offset="1" stop-color="#8f7be8"/></radialGradient>
+<linearGradient id="gVisor" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#1d2e70"/><stop offset="1" stop-color="#0c1540"/></linearGradient>
+</defs></svg>
+
+<style>
+.cbar{display:flex;flex-direction:column;gap:8px;margin:12px 0}
+.cb{display:grid;grid-template-columns:minmax(110px,230px) 1fr auto;gap:10px;align-items:center;font-weight:700;font-size:.88rem}
+.cb .tr{background:var(--line);border-radius:8px;overflow:hidden;height:16px}
+.cb i{display:block;height:100%;border-radius:8px;background:linear-gradient(90deg,var(--blue),var(--lilac-deep));transition:width .4s}
+.need{background:linear-gradient(120deg,var(--blue),var(--board-b));color:#fff;border-radius:24px;padding:20px;text-align:center;margin:6px 0 12px;box-shadow:0 18px 30px -20px var(--shadow)}
+.need span{font-weight:800;font-size:.8rem;letter-spacing:.1em;text-transform:uppercase;opacity:.92}
+.need b{display:block;font:700 clamp(2rem,7vw,3.3rem)/1.15 var(--f-display)}
+.fund{height:18px;border-radius:10px;background:var(--line);overflow:hidden;margin:8px 0}
+.fund i{display:block;height:100%;background:var(--good);transition:width .4s}
+.scn{display:flex;gap:8px;flex-wrap:wrap;margin:10px 0 4px;align-items:center}
+.bh{font:700 1.3rem var(--f-display);color:var(--blue-deep);margin-bottom:4px}
+.cert .stt{display:grid;grid-template-columns:repeat(3,1fr);gap:10px;width:100%;margin:8px 0}
+.cert .stt div{background:var(--blue-soft);border-radius:14px;padding:10px 6px}
+.cert .stt b{display:block;font:700 1.15rem var(--f-display);color:var(--blue-deep)}
+.cert .stt span{font-size:.75rem;font-weight:800;color:var(--muted)}
+@media(max-width:560px){.cb{grid-template-columns:1fr auto}.cb .tr{grid-column:1/-1;order:3}}
+@media print{body>*:not(#shell){display:none!important}body::before{display:none!important}.top,footer,.noprint{display:none!important}body{background:#fff!important;padding:0}.cert{margin:0 auto;box-shadow:none}}
+</style>
+<canvas id="bg" aria-hidden="true"></canvas>
+
+<div id="shell">
+  <header class="top">
+    <button class="logo" data-act="home" aria-label="AI Start басты бет"><span class="lg"><svg viewBox="0 0 32 32" fill="none" stroke="#fff" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round"><rect x="6" y="9" width="20" height="15" rx="6"/><circle cx="12" cy="16.5" r="1.6" fill="#fff"/><circle cx="20" cy="16.5" r="1.6" fill="#fff"/><path d="M16 9V4"/></svg></span>AI Start</button>
+    <span class="sp"></span>
+    <button class="pill iconbtn" data-act="maze" aria-label="Лабиринт"><svg viewBox="0 0 24 24"><path d="M4 4h16v16H4zM4 10h10M10 4v6M14 14v6M14 14h6"/></svg><span class="lbl">Лабиринт</span></button>
+    <span class="pill" id="hp" title="Өткен тақырыптар"></span>
+    <button class="pill iconbtn" id="snd" data-act="sound" aria-label="Дыбысты қосу немесе өшіру"></button>
+  </header>
+  <main id="app"></main>
+  <footer>AI Start · 11-сынып · Жасанды интеллект және цифрлық сауаттылық<div class="auth">Маралбек Жанерке Табылдықызы · Шаяхмет Аяжан Мадиқызы</div></footer>
+</div>
+<div id="toast" role="status" aria-live="polite"></div>
+
+<script>
+/* ============ Деректер ============ */
+const T=[
+{title:'Жасанды интеллект негіздері',lines:['Жасанды интеллект','негіздері'],pic:'brain',
+ yt:'жасанды интеллект деген не қазақша видео сабақ',
+ theory:{lead:'Жасанды интеллект (ЖИ, ағылшынша AI) — компьютерге адамның ақылын қажет ететін істерді орындауға мүмкіндік беретін технологиялар жиынтығы: тану, үйрену, болжау, шешім қабылдау, тілді түсіну.',
+  points:[
+   ['Қысқаша тарихы','1950 жылы Алан Тьюринг «Машина ойлай ала ма?» деген сұрақ қойып, әңгіме арқылы тексеру идеясын (Тьюринг тесті) ұсынды. «Жасанды интеллект» атауы 1956 жылғы Дартмут семинарында қолданысқа енді.'],
+   ['Тар және жалпы ЖИ','Қазіргі жүйелердің көбі — тар ЖИ: бір істі жақсы орындайды (бет тану, аударма, шахмат). Адамдай әмбебап жалпы ЖИ (AGI) әзірге ғылыми мақсат болып қалып отыр.'],
+   ['Қайда қолданылады','Медицинада суреттен ауруды іздеуге, көлікте жолды тануға, білімде жеке көмекші ретінде, ауыл шаруашылығында түсімді болжауға, күнделікті өмірде аударма мен ұсыныстарға.'],
+   ['Цифрлық сауаттылық','ЖИ қателесуі мүмкін. Жауапты бірнеше дереккөзбен салыстыр, жеке деректеріңді (ЖСН, пароль) бөгде сервиске берме, басқа адамның еңбегін авторын көрсетпей пайдаланба.']],
+  terms:[['Алгоритм','Мәселені шешу үшін қадамдар тізбегі'],['Деректер','Модель үйренетін ақпарат жиыны'],['Модель','Деректен үйренген «білім» жиынтығы'],['Тьюринг тесті','Машинаның адамнан айырылмай сөйлесе алуын тексеру']],
+  fact:'Телефондағы бет арқылы ашу, пернетақтаның келесі сөзді болжауы және карта қолданбасындағы кептелісті болжау — бәрі ЖИ.'},
+ video:{scenes:[
+   {pic:'brain',title:'ЖИ дегеніміз не?',text:'Компьютер үйренеді, таниды және шешім қабылдайды.'},
+   {pic:'eye',title:'ЖИ қалай «көреді»?',text:'Камера суретін санға айналдырады да, ішінен бет пен заттарды табады.'},
+   {pic:'chat',title:'Тіл және сөйлесу',text:'Чат-боттар мәтінді түсініп, жауап жазады.'},
+   {pic:'shield',title:'Жауапкершілікпен қолдан',text:'Жауапты тексер, жеке деректеріңді қорға.'}],
+  extra:['«Жасанды интеллект» терминін 1956 жылы Дартмут жазғы семинарында Джон Маккарти ұсынды.','1997 жылы Deep Blue компьютері шахматта әлем чемпионы Гарри Каспаровты жеңді.','Телефондағы дауыс көмекшісі мен бет арқылы құлыптан ашу — ЖИ мысалдары.']},
+ practice:[
+  {"t": "m", "q": "Сәйкестендіру: сол жақтағы терминді оң жақтағы мағынасымен жұптастыр.", "p": [["Алгоритм", "Мәселені шешу үшін қадамдар тізбегі"], ["Деректер", "Модель үйренетін ақпарат жиыны"], ["Модель", "Деректен үйренген «білім» жиынтығы"], ["Тьюринг тесті", "Машинаның адамнан айырылмай сөйлесе алуын тексеру"]], "e": "Бұл терминдер теория бөлімінде түсіндірілген."},
+  {"t": "c", "q": "«Жасанды интеллект» терминін ғылымға қай жылы енгізді (Дартмут семинары)?", "o": ["1936", "1956", "1996", "2016"], "a": 1, "e": "Атау 1956 жылғы Дартмут семинарында қолданысқа енді."},
+  {"t": "f", "q": "Әр тұжырым дұрыс па, қате ме? Әрқайсысын белгіле.", "s": [["Қазіргі ЖИ жүйелерінің көбі — тар ЖИ.", 1], ["ЖИ берген жауап әрқашан дұрыс болады.", 0], ["Парольді бөгде сервиске беруге болады.", 0]], "e": "ЖИ қателесуі мүмкін, ал жеке деректі бөгде сервиске бермейміз."},
+  {"t": "i", "q": "ЖИ-дің ағылшынша қысқартылған атауын жаз (2 әріп).", "a": ["ai"], "show": "AI", "e": "Artificial Intelligence — AI."},
+  {"t": "o", "q": "ЖИ жобасының қадамдарын дұрыс ретке қой.", "items": ["Деректер жинау", "Модельді үйрету", "Нәтижені тексеру", "Қолдануға шығару"], "e": "Алдымен деректер, содан кейін оқыту, тексеру және қолдану."}],
+ test:[
+  {q:'Жасанды интеллектінің мақсаты қандай?',o:['Компьютер адам ақылын қажет ететін істерді орындауға үйрету','Тек ойын шығару','Интернетті жылдамдату','Деректерді өшіру'],a:0,e:'ЖИ тану, үйрену, болжау сияқты зияткерлік істерді компьютерге үйретеді.'},
+  {q:'Тьюринг тесті нені тексереді?',o:['Процессордың жылдамдығын','Машинаның әңгімеде адамнан айырылмауын','Интернет жылдамдығын','Экран сапасын'],a:1,e:'Адам сөйлесушінің машина екенін байқамаса, тест өтілді деп саналады.'},
+  {q:'Қазіргі ЖИ жүйелерінің көбі қай түрге жатады?',o:['Жалпы ЖИ','Санасы бар ЖИ','Тар ЖИ','Ешқайсысы'],a:2,e:'Қазіргі жүйелер нақты бір міндетке бейімделген.'},
+  {q:'ЖИ берген жауапты қолданар алдында не істеу дұрыс?',o:['Сөзсіз сену','Дереккөзбен тексеру','Парольді жіберу','Тексермей көшіру'],a:1,e:'ЖИ қателесуі мүмкін, сондықтан тексеру — цифрлық сауаттылықтың бөлігі.'},
+  {q:'Қайсысы ЖИ мысалы емес?',o:['Дауыс көмекшісі','Бет танитын қолданба','Тіл аудармашысы','Қарапайым сағаттың уақыт көрсетуі'],a:3,e:'Қарапайым сағат үйренбейді, тек бекітілген ережемен жұмыс істейді.'}]},
+
+{title:'Машиналық оқыту',lines:['Машиналық','оқыту'],pic:'chart',
+ yt:'машиналық оқыту деген не қарапайым түсіндірме',
+ theory:{lead:'Машиналық оқыту (МО) — ЖИ-дің бөлімі. Бағдарламашы әр ережені қолмен жазбайды: компьютер мысалдар мен деректерден заңдылықты өзі табады.',
+  points:[
+   ['Үш негізгі түрі','Бақыланатын оқыту — жауабы белгілі деректер (спам / спам емес). Бақыланбайтын оқыту — жауабы жоқ деректерді ұқсастығы бойынша топтау. Күшейтілген оқыту — әрекетке сыйақы немесе жаза беру арқылы үйрену (ойын, робот).'],
+   ['Міндеттер','Классификация — санатты болжау (мысық па, ит пе?). Регрессия — санды болжау (пәтер бағасы). Кластеризация — деректерді топтау.'],
+   ['Деректер бөлінеді','Әдетте деректің үлкен бөлігі (мысалы, 80%) оқытуға, қалғаны (20%) тексеруге беріледі. Модель өзі көрмеген деректе тексеріледі.'],
+   ['Жиі кездесетін қате','Шамадан тыс үйрену (overfitting): модель оқыту деректерін жаттап алып, жаңа мысалда қателеседі.']],
+  terms:[['Белгі (label)','Дұрыс жауап'],['Ерекшелік (feature)','Болжауға көмектесетін көрсеткіш'],['Дәлдік','Дұрыс болжамдар үлесі'],['Overfitting','Шамадан тыс үйрену']],
+  fact:'YouTube мен музыка қолданбаларындағы «саған ұнауы мүмкін» ұсыныстар машиналық оқыту арқылы жасалады.'},
+ video:{scenes:[
+   {pic:'chart',title:'Деректер — отын',text:'Мысал көп әрі сапалы болса, модель жақсы үйренеді.'},
+   {pic:'gear',title:'Модель оқиды',text:'Алгоритм деректегі заңдылықты іздеп, өзін баптайды.'},
+   {pic:'target',title:'Болжам жасайды',text:'Жаңа деректе жауапты болжайды: спам ба, баға қанша?'},
+   {pic:'check',title:'Тексер және жақсарт',text:'Тест деректерінде дәлдікті өлшеп, қатені азайтады.'}],
+  extra:['Netflix пен YouTube ұсыныстары — машиналық оқытудың күнделікті мысалы.','«Machine learning» терминін 1959 жылы Артур Сэмюэл қолданған.','Деректер нашар болса, модель де нашар болады: «қоқыс кірсе — қоқыс шығады».']},
+ practice:[
+  {"t": "m", "q": "Сәйкестендіру: сол жақтағы терминді оң жақтағы мағынасымен жұптастыр.", "p": [["Бақыланатын оқыту", "Белгісі бар мысалдармен үйрену"], ["Бақыланбайтын оқыту", "Белгісіз деректі ұқсастығы бойынша топтау"], ["Күшейтілген оқыту", "Сыйақы мен жаза арқылы үйрену"], ["Регрессия", "Үздіксіз санды болжау"]], "e": "Үш оқыту түрі мен регрессия міндеті теорияда берілген."},
+  {"t": "c", "q": "Қайсысы бақыланатын оқытуға жатады?", "o": ["«Спам / спам емес» деп белгіленген хаттармен модель үйрету", "Белгісіз клиенттерді топтау", "Ойында сыйақы арқылы үйрену", "Деректерді өшіру"], "a": 0, "e": "Бақыланатын оқытуда әр мысалдың дұрыс жауабы (белгісі) бар."},
+  {"t": "f", "q": "Әр тұжырым дұрыс па, қате ме? Әрқайсысын белгіле.", "s": [["Деректің бір бөлігі модельді тексеруге қалдырылады.", 1], ["Модельді тек оқыту деректерімен ғана тексеру жеткілікті.", 0], ["Пәтердің бағасын болжау — регрессия міндеті.", 1]], "e": "Тексеру деректері модель жаңа мысалда қалай жұмыс істейтінін көрсетеді."},
+  {"t": "i", "q": "Барлығы 500 мысал бар. 80%-ы оқытуға берілсе, тексеруге неше мысал қалады?", "a": ["100"], "show": "100", "e": "20% × 500 = 100."},
+  {"t": "o", "q": "Машиналық оқыту жобасының қадамдарын ретке қой.", "items": ["Мәселені анықтау", "Деректерді дайындау", "Модельді оқыту", "Тексеріп жақсарту"], "e": "Мәселе анықталмай, деректі дұрыс таңдау мүмкін емес."}],
+ test:[
+  {q:'Машиналық оқытудың мәні неде?',o:['Ережені қолмен жазу','Деректерден заңдылықты модельдің өзі табуы','Компьютерді жылдамдату','Файлдарды сығу'],a:1,e:'МО-да ережені адам емес, модель деректен табады.'},
+  {q:'Белгіленген деректермен оқыту қалай аталады?',o:['Бақыланбайтын','Күшейтілген','Бақыланатын','Кездейсоқ'],a:2,e:'Белгі (дұрыс жауап) бар болғандықтан, оқыту бақыланатын болады.'},
+  {q:'Клиенттерді ұқсастығы бойынша жауапсыз деректермен топтау қай оқыту?',o:['Бақыланбайтын оқыту (кластеризация)','Бақыланатын оқыту','Күшейтілген оқыту','Ешқайсысы'],a:0,e:'Белгісіз деректерде топ іздеу — кластеризация.'},
+  {q:'Тест деректері не үшін керек?',o:['Модельді көрмеген деректе тексеру үшін','Модельді әшекейлеу үшін','Деректі көбейту үшін','Жарнама үшін'],a:0,e:'Тест нағыз жұмыс сапасын көрсетеді.'},
+  {q:'Робот сыйақы мен жаза арқылы үйренсе, бұл қандай оқыту?',o:['Бақыланатын','Күшейтілген','Бақыланбайтын','Статикалық'],a:1,e:'Сыйақы арқылы үйрену — күшейтілген оқыту.'}]},
+
+{title:'Нейрондық желіні ұйымдастыру',lines:['Нейрондық желіні','ұйымдастыру'],pic:'network',widget:'neuron',
+ yt:'нейрондық желі қалай жұмыс істейді түсіндірме',
+ theory:{lead:'Нейрондық желі — адам миындағы нейрондардан шабыт алған модель. Ол көптеген қарапайым есептеуші түйіндерден (нейрондардан) тұрады және деректерден үйренеді.',
+  points:[
+   ['Бір нейрон не істейді','Кірістерді (x) салмаққа (w) көбейтіп қосады, ығысу (b) қосады және активация функциясы арқылы шығыс береді: y = f(w₁x₁ + w₂x₂ + b).'],
+   ['Қабаттар','Кіріс қабаты деректі қабылдайды, жасырын қабаттар белгілерді өңдейді, шығыс қабаты нәтиже береді. Жасырын қабаты көп желі «терең» деп аталады.'],
+   ['Активация функциясы','ReLU теріс санды 0-ге айналдырады, оң санды өзгертпейді: ReLU(x) = max(0, x). Сигмоида кез келген санды 0 мен 1 аралығына келтіреді.'],
+   ['Желі қалай үйренеді','Болжам жасалады, қате өлшенеді, содан кейін кері таралу әдісімен салмақтар қатені азайтатындай аздап өзгереді. Бұл көп рет қайталанады.']],
+  terms:[['Салмақ','Кірістің маңыздылығы'],['Ығысу (bias)','Қосымша қосылатын мән'],['Активация','Шығысты есептейтін функция'],['Кері таралу','Қатені желі бойымен кері тарату']],
+  fact:'Адам миында шамамен 86 миллиард нейрон бар. Жасанды нейрон моделін алғаш 1943 жылы Мак-Каллок пен Питтс ұсынды.'},
+ video:{scenes:[
+   {pic:'network',title:'Нейрондар желісі',text:'Нейрондар қабаттарға біріктіріліп, ақпаратты бір-біріне береді.'},
+   {pic:'gear',title:'Салмақ және ығысу',text:'Салмақ кірістің маңыздылығын, ығысу қосымша түзетуді көрсетеді.'},
+   {pic:'chart',title:'Активация функциясы',text:'ReLU теріс мәнді өшіріп, оң мәнді өткізеді.'},
+   {pic:'brain',title:'Оқыту',text:'Қате азая түскенше салмақтар қайта-қайта түзетіледі.'}],
+  extra:['Перцептронды 1958 жылы Фрэнк Розенблатт ұсынды.','Заманауи тілдік модельдердің ішінде миллиардтаған салмақ бар.','Мини-лабораторияда нейронның шығысы салмақ өзгергенде қалай өзгеретінін көре аласың.']},
+ practice:[
+  {"t": "m", "q": "Сәйкестендіру: сол жақтағы терминді оң жақтағы мағынасымен жұптастыр.", "p": [["x", "Нейронның кіріс мәні"], ["w", "Салмақ — кірістің маңыздылығы"], ["b", "Ығысу (bias)"], ["ReLU", "Теріс мәнді 0-ге айналдыратын активация"]], "e": "z = w₁x₁ + w₂x₂ + b, ал ReLU(z) = max(0, z)."},
+  {"t": "c", "q": "Желінің қай қабаты деректі бірінші қабылдайды?", "o": ["Кіріс қабаты", "Шығыс қабаты", "Жасырын қабат", "Жою қабаты"], "a": 0, "e": "Деректер кіріс қабатына беріледі."},
+  {"t": "f", "q": "Әр тұжырым дұрыс па, қате ме? Әрқайсысын белгіле.", "s": [["Терең желіде жасырын қабаттар көп болады.", 1], ["ReLU(−5) = −5.", 0], ["Салмағы үлкен кіріс нейронға күштірек әсер етеді.", 1]], "e": "ReLU(x) = max(0, x), сондықтан ReLU(−5) = 0."},
+  {"t": "i", "q": "x₁=2, x₂=3, w₁=1, w₂=2, b=1. Активациясыз z = w₁x₁ + w₂x₂ + b неге тең?", "a": ["9"], "show": "9", "e": "1·2 + 2·3 + 1 = 9."},
+  {"t": "o", "q": "Нейронның есептеу қадамдарын ретке қой.", "items": ["Кіріс мәндерін алу", "Салмаққа көбейту", "Қосып, b қосу", "Активация қолдану"], "e": "Алдымен кіріс, соңында активация арқылы шығыс шығады."}],
+ test:[
+  {q:'Нейрон шығысын қалай есептейді?',o:['Кірісті салмаққа көбейтіп қосады, ығысу қосып, активация қолданады','Кірісті өшіреді','Тек санайды','Кездейсоқ сан береді'],a:0,e:'y = f(w₁x₁ + w₂x₂ + b).'},
+  {q:'Салмақтар қашан өзгереді?',o:['Оқыту барысында','Тек желі өшкенде','Ешқашан','Қолданушы қарағанда'],a:0,e:'Оқыту кезінде салмақтар қатені азайтатындай түзеледі.'},
+  {q:'Жасырын қабаты көп желі қалай аталады?',o:['Таяз желі','Терең нейрондық желі','Бос желі','Жергілікті желі'],a:1,e:'Көп жасырын қабат — терең желі.'},
+  {q:'ReLU(x) функциясы неге тең?',o:['x²','−x','max(0, x)','1/x'],a:2,e:'ReLU теріс санды 0 етеді, оң санды өзгертпейді.'},
+  {q:'Кері таралудың мақсаты қандай?',o:['Желіні өшіру','Қатені желі бойымен кері жіберіп, салмақтарды түзету','Суретті бояу','Деректі шифрлау'],a:1,e:'Кері таралу әр салмақтың қатеге үлесін есептейді.'}]},
+
+{title:'Нейрондық желіні жобалау',lines:['Нейрондық желіні','жобалау'],pic:'gear',code:true,
+ yt:'нейрондық желі жобалау keras үйрену',
+ theory:{lead:'Нейрондық желіні жобалау — міндеттен бастап дайын модельге дейінгі жоспарлы жұмыс. Әр қадамда қате жіберсең, нәтиже төмен болады.',
+  points:[
+   ['1. Міндет және деректер','Классификация ма, регрессия ма — анықта. Деректі тазалап, сандарға келтір (нормалау), оқыту / тексеру / тест жиындарына бөл.'],
+   ['2. Архитектура','Кіріс қабатының өлшемі деректерге сәйкес болады: 28×28 сурет — 784 кіріс. Шығыс қабаты сынып санына тең: цифрлар үшін 10. Жасырын қабаттардың санын тәжірибеде таңдайсың.'],
+   ['3. Шығын және оңтайландыру','Шығын функциясы (loss) қатені өлшейді, оңтайландырғыш (optimizer) салмақтарды түзетеді. Оқу жылдамдығы (learning rate) тым үлкен болса, оқыту тұрақсыз болады.'],
+   ['4. Оқыту және бағалау','Epoch — деректердің желіден бір толық өтуі. Модельді тест жиынында бағала, нәтиже нашар болса, архитектураны немесе деректерді жақсарт.']],
+  terms:[['Epoch','Деректердің толық бір өтуі'],['Batch','Бір қадамда өңделетін мысалдар тобы'],['Loss','Қателік өлшемі'],['Learning rate','Оқу жылдамдығы']],
+  fact:'Код жазбай-ақ Google Teachable Machine арқылы камераңмен өз суреттеріңді үйретіп, модель жасауға болады.'},
+ video:{scenes:[
+   {pic:'target',title:'Міндетті анықта',text:'Не болжағың келеді: санат па, сан ба?'},
+   {pic:'doc',title:'Деректі дайында',text:'Тазала, нормала, оқыту мен тест жиынына бөл.'},
+   {pic:'gear',title:'Архитектураны таңда',text:'Кіріс пен шығыс өлшемін анықта, жасырын қабаттарды қос.'},
+   {pic:'check',title:'Оқыт, тексер, жақсарт',text:'Epoch-тарды орындап, тест жиынында нәтижені бағала.'}],
+  extra:['Teachable Machine — суретті, дыбысты және қозғалысты кодсыз үйрететін Google құралы.','MNIST — қолжазба цифрлардың 70 000 суреті бар белгілі жиын (60 000 оқыту және 10 000 тест).','Дайын модельді өз міндетіңе қайта үйрету уақытты үнемдейді (transfer learning).']},
+ practice:[
+  {"t": "m", "q": "Сәйкестендіру: сол жақтағы терминді оң жақтағы мағынасымен жұптастыр.", "p": [["Dense", "Толық байланысқан қабат"], ["epochs", "Оқытудың қайталану саны"], ["softmax", "Шығысты ықтималдыққа айналдыру"], ["Learning rate", "Оқыту қадамының өлшемі"]], "e": "Keras үлгісіндегі негізгі ұғымдар."},
+  {"t": "c", "q": "0-ден 9-ға дейінгі цифрларды тану үшін шығыс қабатта неше нейрон болады?", "o": ["2", "10", "28", "784"], "a": 1, "e": "Әр цифрға бір нейрон: 10 сынып — 10 шығыс."},
+  {"t": "f", "q": "Әр тұжырым дұрыс па, қате ме? Әрқайсысын белгіле.", "s": [["28×28 суреттің кіріс нейрон саны — 784.", 1], ["Learning rate тым үлкен болса, оқыту әрқашан жақсарады.", 0], ["Оқытқаннан кейін модельді бағалау керек.", 1]], "e": "Тым үлкен қадам желіні ең тиімді мәннен секіртіп өткізіп жібереді."},
+  {"t": "i", "q": "28×28 пиксельді сурет жазық вектор болып берілсе, кіріс нейрон саны қанша?", "a": ["784"], "show": "784", "e": "28 × 28 = 784."},
+  {"t": "o", "q": "Жобалау қадамдарын ретке қой.", "items": ["Міндетті анықтау", "Деректерді дайындау", "Архитектураны таңдау", "Оқыту және бағалау"], "e": "Алдымен міндет, соңында оқыту мен бағалау."}],
+ test:[
+  {q:'Жобалаудың бірінші қадамы қандай?',o:['Желіні оқыту','Міндетті анықтау','Модельді жариялау','Жарнама жасау'],a:1,e:'Міндет анық болмаса, деректі де, модельді де дұрыс таңдай алмайсың.'},
+  {q:'Деректі неге оқыту, тексеру және тест жиынына бөледі?',o:['Файлды кішірейту үшін','Модельді көрмеген деректе әділ бағалау үшін','Дизайн үшін','Желіні өшіру үшін'],a:1,e:'Бөлу шамадан тыс үйренуді байқауға көмектеседі.'},
+  {q:'Epoch дегеніміз не?',o:['Бір нейрон','Оқыту деректерінің желіден бір толық өтуі','Қабат түрі','Жалған деректер'],a:1,e:'Epoch — деректер жиынының бір толық айналымы.'},
+  {q:'Кодсыз сурет үйретуге болатын Google құралы қайсысы?',o:['Notepad','Teachable Machine','Paint','Calculator'],a:1,e:'Teachable Machine браузерде жұмыс істейді.'},
+  {q:'Оқыту қатесін өлшейтін функция қалай аталады?',o:['Шығын функциясы (loss)','Қосу функциясы','Бояу функциясы','Жою функциясы'],a:0,e:'Loss болжам мен дұрыс жауаптың арақашықтығын өлшейді.'}]},
+
+{title:'STARTUP қалай іске қосылады?',lines:['STARTUP қалай','іске қосылады?'],pic:'rocket',
+ yt:'стартап қалай бастау керек идеядан MVP дейін',
+ theory:{lead:'Стартап — белгісіздік жағдайында тез өсуге бағытталған жаңа бизнес. Басты ерекшелігі: идеяны аз қаржымен тексеріп, кейін масштабтауға болады.',
+  points:[
+   ['Іске қосу жолы','Идея → мәселені растау (мүмкін клиенттермен сөйлесу) → MVP → алғашқы пайдаланушылар → инвестиция → өсу.'],
+   ['MVP деген не?','Minimum Viable Product — идеяны тексеруге жететін ең қарапайым өнім. Толық қолданбаның орнына бір ғана негізгі функциясы бар прототип те болады.'],
+   ['Lean Startup','Жасау → Өлшеу → Үйрену циклі. Аз жасап, көп үйрен, қатені ерте түзет.'],
+   ['Команда және қаржы','Командада өнімді жасайтын, дизайн жасайтын және сататын адамдар болғаны жақсы. Қаржыландыру: өз қаражаты, pre-seed, seed, содан кейін Series A.']],
+  terms:[['MVP','Ең қарапайым жұмыс істейтін өнім'],['Product-market fit','Өнімнің нарыққа сәйкес келуі'],['Инвестор','Стартапқа ақша салатын адам немесе қор'],['Масштабтау','Өсуді тез арттыру']],
+  fact:'Қазақстанда IT-стартаптарды Astana Hub халықаралық технопаркі қолдайды.'},
+ video:{scenes:[
+   {pic:'bulb',title:'Идея',text:'Нақты мәселені шешетін идея таңда.'},
+   {pic:'people',title:'Мәселені тексер',text:'Мүмкін клиенттермен сөйлесіп, оларға бұл мәселе керек екенін біл.'},
+   {pic:'rocket',title:'MVP шығар',text:'Ең қарапайым нұсқаны жасап, алғашқы пайдаланушыға көрсет.'},
+   {pic:'coin',title:'Инвестиция және өсу',text:'Нәтиже көрсетсең, инвесторлар қызығады.'}],
+  extra:['Lean Startup идеясын Эрик Рис танымал етті.','Стартаптардың көбі нарықта сұраныс болмағандықтан тоқтайды деп жиі айтылады.','Алғашқы клиенттермен сөйлесу — ең арзан әрі пайдалы тексеру.']},
+ practice:[
+  {"t": "m", "q": "Сәйкестендіру: сол жақтағы терминді оң жақтағы мағынасымен жұптастыр.", "p": [["MVP", "Идеяны тексеретін ең қарапайым өнім"], ["Инвестор", "Стартапты қаржыландыратын тұлға"], ["Пайдаланушы", "Өнімді қолданатын адам"], ["Мәселе", "Адамдар шешім іздейтін қиындық"]], "e": "Стартап мәселеден басталып, MVP арқылы тексеріледі."},
+  {"t": "c", "q": "Lean Startup циклі қандай?", "o": ["Жасау → Өлшеу → Үйрену", "Сату → Жабу → Бастау", "Ойлау → Күту → Тоқтау", "Жазу → Өшіру → Көшіру"], "a": 0, "e": "Цикл үздіксіз қайталанады."},
+  {"t": "f", "q": "Әр тұжырым дұрыс па, қате ме? Әрқайсысын белгіле.", "s": [["MVP жасамас бұрын мәселені тексерген дұрыс.", 1], ["Стартап әрқашан бірден инвестиция алады.", 0], ["Пайдаланушы пікірі өнімді жақсартуға көмектеседі.", 1]], "e": "Пікір алу — Lean Startup-тың негізі."},
+  {"t": "i", "q": "Бір пайдаланушыны тарту құны 500 теңге. 200 пайдаланушы тартсақ, жалпы шығын қанша теңге?", "a": ["100000"], "show": "100 000", "e": "500 × 200 = 100 000 теңге."},
+  {"t": "o", "q": "Стартаптың даму жолын ретке қой.", "items": ["Идея", "Мәселені тексеру", "MVP жасау", "Пайдаланушылар", "Инвестиция"], "e": "Алдымен идея мен мәселе, кейін өнім, соңында қаржыландыру."}],
+ test:[
+  {q:'Стартаптың басты ерекшелігі қандай?',o:['Тез өсуге бағытталған жаңа, масштабталатын идея','Тек дүкен ашу','Мемлекеттік қызмет','Тек ескі бизнесті көшіру'],a:0,e:'Стартап масштабталатын жаңа модельге негізделеді.'},
+  {q:'MVP не үшін жасалады?',o:['Идеяны аз қаржымен тексеру үшін','Жарнама үшін','Салықтан құтылу үшін','Бәсекелестерді қорқыту үшін'],a:0,e:'MVP — тез әрі арзан тексеру құралы.'},
+  {q:'Product-market fit дегеніміз не?',o:['Өнімнің нарық сұранысына сәйкес келуі','Жарнама бюджеті','Кеңсе орны','Команда саны'],a:0,e:'Клиенттер өнімді шын қажет еткенде PMF бар деп айтады.'},
+  {q:'Стартаптың ең ерте қаржыландыру кезеңдерінің бірі қайсы?',o:['Pre-seed / Seed','IPO','Банкроттық','Ребрендинг'],a:0,e:'Pre-seed және seed — алғашқы инвестиция.'},
+  {q:'Неге алдымен мәселені тексереміз?',o:['Ешкімге керек емес өнім жасамау үшін','Уақытты созу үшін','Логотип таңдау үшін','Көп сөйлесу үшін'],a:0,e:'Сұраныс болмаса, жақсы өнім де сатылмайды.'}]},
+
+{title:'Жобаны алға жылжыту',lines:['Жобаны алға','жылжыту'],pic:'megaphone',
+ yt:'жобаны алға жылжыту питч KPI стартап',
+ theory:{lead:'Жобаны алға жылжыту — өнім туралы дұрыс адамдарға дұрыс сөзбен жеткізу және өсімін өлшеп отыру. Жақсы өнім жасау жеткіліксіз: оны білу керек.',
+  points:[
+   ['Мақсатты аудитория','Өнімді нақты кім сатып алады? Жасын, қызығушылығын, мәселесін жаз. Бір «персона» жасап, соған арнап жаз.'],
+   ['Құнды ұсыныс','Клиентке не пайда әкелетіні бір сөйлемде айтылуы керек: «Біз X үшін Y мәселесін Z арқылы шешеміз».'],
+   ['Көрсеткіштер (KPI)','Пайдаланушы саны, конверсия = әрекет жасағандар / келушілер × 100%, клиентті тарту құны. Өлшенбейтін нәрсені жақсартуға болмайды.'],
+   ['Питч','Қысқа таныстыру реті: мәселе → шешім → нарық → бизнес-модель → команда → не сұрайсың. Лифт-питч 30–60 секундқа сыйады.']],
+  terms:[['KPI','Нәтиженің негізгі көрсеткіші'],['Конверсия','Келушінің әрекет жасау үлесі'],['Питч','Идеяның қысқа таныстырылымы'],['Нетворкинг','Пайдалы таныстықтар құру']],
+  fact:'Жобаңды гранттар, акселераторлар, хакатондар және демо-күндер арқылы көпшілікке таныстыруға болады.'},
+ video:{scenes:[
+   {pic:'target',title:'Аудиторияңды біл',text:'Кімге сатып жатқаныңды нақты жаз.'},
+   {pic:'megaphone',title:'Құнды ұсыныс',text:'Өнімнің пайдасын бір сөйлемде түсіндір.'},
+   {pic:'chart',title:'KPI: өлшеп отыр',text:'Конверсия мен тарту құнын апта сайын қарап отыр.'},
+   {pic:'people',title:'Питч және нетворкинг',text:'Қысқа әрі нақты таныстыр, пайдалы адамдармен таныс.'}],
+  extra:['Лифт-питч — лифтпен көтерілу уақытына сыятын қысқа таныстыру.','Бизнес-модель канвасын Александр Остервальдер ұсынған.','Демо-күн мен хакатондар өнімді қолданушыларға көрсетудің жақсы жолы.']},
+ practice:[
+  {"t": "m", "q": "Сәйкестендіру: сол жақтағы терминді оң жақтағы мағынасымен жұптастыр.", "p": [["Конверсия", "Сайтқа кіргендердің ішінде сатып алғандар үлесі"], ["SMART", "Нақты, өлшенетін мақсат қою әдісі"], ["Питч", "Идеяны қысқа әрі нанымды таныстыру"], ["Нарық", "Сатып алушылар мен сұраныс аймағы"]], "e": "Бұл ұғымдар осы тақырыптың теориясында берілген."},
+  {"t": "c", "q": "Питчте міндетті түрде не айтылуы керек?", "o": ["Мәселе және шешім", "Команда мүшелерінің жасы", "Тек баға тізімі", "Достардың аттары"], "a": 0, "e": "Мәселе мен шешім питчтің өзегі."},
+  {"t": "f", "q": "Әр тұжырым дұрыс па, қате ме? Әрқайсысын белгіле.", "s": [["SMART мақсат өлшенетін болуы керек.", 1], ["Питчті баға тізімінен бастаған дұрыс.", 0], ["Конверсия = сатып алғандар / келушілер × 100%.", 1]], "e": "Питч алдымен мәселені көрсетеді; конверсия пайызбен есептеледі."},
+  {"t": "i", "q": "Сайтқа 2000 адам кірді, 100 адам сатып алды. Конверсия неше пайыз?", "a": ["5"], "show": "5", "e": "100 / 2000 × 100% = 5%."},
+  {"t": "o", "q": "Питч құрылымын ретке қой.", "items": ["Мәселе", "Шешім", "Нарық", "Бизнес-модель", "Команда", "Не сұрайсың"], "e": "Тыңдаушы алдымен мәселені түсініп, соңында сұранысты естиді."}],
+ test:[
+  {q:'Мақсатты аудитория дегеніміз кім?',o:['Өнімді сатып алуы мүмкін нақты адамдар тобы','Барлық адам','Тек достар','Тек инвесторлар'],a:0,e:'Аудитория неғұрлым нақты болса, жарнама соғұрлым тиімді.'},
+  {q:'KPI дегеніміз не?',o:['Нәтижені өлшейтін негізгі көрсеткіш','Командаға қойылатын лақап ат','Сайт түсі','Компания адресі'],a:0,e:'KPI — Key Performance Indicator.'},
+  {q:'Лифт-питчтің шамалы ұзақтығы қанша?',o:['30–60 секунд','3 сағат','1 апта','5 күн'],a:0,e:'Лифт-питч өте қысқа болуы керек.'},
+  {q:'Құнды ұсыныс (value proposition) не түсіндіреді?',o:['Өнім клиентке қандай нақты пайда әкелетінін','Кеңсе адресін','Директор жасын','Компания логотипін'],a:0,e:'Клиент «маған не пайдасы бар?» деген сұраққа жауап алады.'},
+  {q:'Конверсияның формуласы қайсы?',o:['Әрекет жасағандар / келушілер × 100%','Келушілер − әрекет','Шығын × баға','Клик + көрсетілім'],a:0,e:'Конверсия — әрекет жасағандардың үлесі.'}]},
+
+{title:'IT STARTUP және жарнама',lines:['IT STARTUP','және жарнама'],pic:'phone',
+ yt:'IT стартап жарнама SMM таргет маркетинг негіздері',
+ theory:{lead:'IT-стартап — бағдарлама, қолданба немесе цифрлық қызмет арқылы мәселе шешетін бизнес. Жарнама оған алғашқы пайдаланушыларды әкеледі.',
+  points:[
+   ['IT-стартап түрлері','SaaS (жазылымдағы бағдарлама), мобильді қолданба, маркетплейс, EdTech (білім), FinTech (қаржы), AI-өнімдер.'],
+   ['Жарнама арналары','Instagram, TikTok, Telegram, таргетті жарнама, контент-маркетинг, SEO, инфлюенсерлер, электронды пошта.'],
+   ['AIDA моделі','Назар (Attention) → Қызығушылық (Interest) → Қалау (Desire) → Әрекет (Action). Жарнама осы төрт сатыдан өтуі керек.'],
+   ['Өлшем формулалары','CTR = кликтер / көрсетілімдер × 100%. ROI = (табыс − шығын) / шығын × 100%. ЖИ жарнама мәтінін ұсына алады, бірақ мәліметті адам тексеруі керек.']],
+  terms:[['SaaS','Жазылым арқылы бұлттағы бағдарлама'],['Таргет','Нақты аудиторияға бағыттау'],['CTR','Клик үлесі'],['ROI','Инвестиция қайтарымы']],
+  fact:'Жарнама шынайы болуы керек: жалған уәде мен ойдан шығарылған пікірлерді қолдануға болмайды.'},
+ video:{scenes:[
+   {pic:'phone',title:'IT-өнім түрлері',text:'Қолданба, SaaS, маркетплейс, EdTech немесе FinTech.'},
+   {pic:'megaphone',title:'Жарнама арналары',text:'Аудиторияң қай жерде болса, сол жерде жарнамала.'},
+   {pic:'chart',title:'CTR және ROI',text:'Жарнама пайда әкеле ме? Сандар жауап береді.'},
+   {pic:'shield',title:'Адал жарнама',text:'Шынайы уәде бер, адамдарды алдама.'}],
+  extra:['SaaS — Software as a Service: бағдарламаға жазылым арқылы қол жеткізу.','Таргетті жарнама жасы, қызығушылығы және қаласы бойынша аудиторияны таңдауға мүмкіндік береді.','ЖИ жарнаманың мәтін мен сурет нұсқаларын тез жасайды, бірақ соңғы шешімді адам қабылдайды.']},
+ practice:[
+  {"t": "m", "q": "Сәйкестендіру: сол жақтағы терминді оң жақтағы мағынасымен жұптастыр.", "p": [["CTR", "Клик санының көрсетілім санына қатынасы"], ["ROI", "Инвестицияның өтемі, пайдасы"], ["AIDA", "Назар → қызығу → тілек → әрекет моделі"], ["SaaS", "Жазылыммен пайдаланатын бұлттағы бағдарлама"]], "e": "Жарнама мен IT стартаптың негізгі терминдері."},
+  {"t": "c", "q": "AIDA моделінің бірінші әрпі «A» нені білдіреді?", "o": ["Attention — назар", "Amount — көлем", "Asset — актив", "Alarm — дабыл"], "a": 0, "e": "Алдымен адамның назарын аудару керек."},
+  {"t": "f", "q": "Әр тұжырым дұрыс па, қате ме? Әрқайсысын белгіле.", "s": [["ROI оң болса, жарнама пайда әкелген.", 1], ["CTR табу үшін клик санын көрсетілім санына көбейтеді.", 0], ["SaaS әдетте жазылым арқылы беріледі.", 1]], "e": "CTR = клик / көрсетілім × 100%."},
+  {"t": "i", "q": "10 000 көрсетілім және 200 клик болды. CTR неше пайыз?", "a": ["2"], "show": "2", "e": "200 / 10 000 × 100% = 2%."},
+  {"t": "o", "q": "Жарнама науқанының қадамдарын ретке қой.", "items": ["Мақсат қою", "Аудиторияны таңдау", "Жарнаманы іске қосу", "Нәтижені өлшеу"], "e": "Мақсатсыз нәтижені өлшеу мүмкін емес."}],
+ test:[
+  {q:'SaaS дегеніміз не?',o:['Жазылым арқылы бұлттағы бағдарлама','Қағаз журнал','Ойын консолі','Теледидар арнасы'],a:0,e:'SaaS — Software as a Service.'},
+  {q:'CTR нені көрсетеді?',o:['Кликтердің көрсетілімдерге қатынасын','Сайт түсін','Қызметкер санын','Бағаны'],a:0,e:'CTR — Click-Through Rate.'},
+  {q:'AIDA моделіндегі «D» не?',o:['Desire — қалау','Data — дерек','Design — дизайн','Delete — өшіру'],a:0,e:'Қызығушылықтан кейін қалау туады.'},
+  {q:'Таргетті жарнама дегеніміз не?',o:['Нақты аудиторияға бағытталған жарнама','Барлығына бірдей көрсетілетін жарнама','Тек теледидардағы жарнама','Жарнамасыз сату'],a:0,e:'Таргет жасы, қызығушылығы, қаласы бойынша бағытталады.'},
+  {q:'Жарнамада ЖИ қолданғанда не маңызды?',o:['Жарнама шынайы болып, пайдаланушыны алдамауы','Мүмкіндігінше көп уәде беру','Жалған пікір қосу','Мәліметті тексермеу'],a:0,e:'Этика мен шынайылық — жарнаманың негізі.'}]},
+
+{title:'Бизнес жоспар',lines:['Бизнес жоспар','(құрастыру)'],pic:'doc',builder:true,
+ yt:'бизнес жоспар қалай жазылады стартап үшін',
+ theory:{lead:'Бизнес жоспар — идеяны қағазға түсіріп, оның жұмыс істейтінін сандармен тексеретін құжат. Одан инвесторлар да, сен де шешім қабылдайсыңдар.',
+  points:[
+   ['Бөлімдері','Түйіндеме, мәселе және шешім, нарық пен аудитория, маркетинг, команда, қаржы жоспары, тәуекелдер.'],
+   ['Қаржы формулалары','Табыс = баға × сатылым. Шығын = тұрақты шығын + айнымалы шығын × сатылым. Пайда = табыс − шығын.'],
+   ['Нөлдік нүкте','Табыс шығынға тең болатын сатылым: тұрақты шығын / (баға − бір бірліктің айнымалы шығыны). Одан асқан сатылым пайда әкеледі.'],
+   ['Тәуекелдер','Не қате кетуі мүмкін? Бәсекелестер, сұраныстың аз болуы, команданың шаршауы. Әр тәуекелге жауап жоспарын жаз.']],
+  terms:[['Тұрақты шығын','Сатылымға тәуелсіз ай сайынғы шығын'],['Айнымалы шығын','Әр сатылған өнімге кететін шығын'],['Break-even','Нөлдік нүкте'],['Executive summary','Жоспардың бір беттік түйіндемесі']],
+  fact:'Бұл тақырыпта өз бизнес жоспарыңды құрастырып, нөлдік нүктені графиктен көресің.'},
+ video:{scenes:[
+   {pic:'doc',title:'Бизнес жоспар құрылымы',text:'Түйіндемеден тәуекелге дейінгі бөлімдер.'},
+   {pic:'people',title:'Нарық және команда',text:'Кімге сатасың және кіммен бірге істейсің?'},
+   {pic:'coin',title:'Қаржы: нөлдік нүкте',text:'Қанша сатсаң, шығын қайтады — соны есепте.'},
+   {pic:'rocket',title:'Іске қосу жоспары',text:'Алғашқы 90 күнге нақты қадамдар жаз.'}],
+  extra:['Бизнес жоспар — жай құжат емес, идеяны тексеретін құрал.','Нөлдік нүкте — табыс шығынға тең болатын сатылым көлемі.','Инвестор әдетте алдымен 1–2 беттік түйіндемені оқиды.']}}
+];
+
+const IDEAS=[
+ {name:'StudyBuddy AI',one:'Оқушыларға үй тапсырмасын түсіндіретін ЖИ-көмекші',problem:'Оқушылар қиын тақырыпты түсінбей қалады, репетитор қымбат.',solution:'Қолданба тақырыпты қарапайым тілде түсіндіріп, жаттығу береді.',audience:'8–11 сынып оқушылары және олардың ата-аналары'},
+ {name:'EcoSort',one:'Қоқысты суретке түсіріп, қай жәшікке тастауды айтатын қолданба',problem:'Адамдар қоқысты дұрыс сұрыптауды білмейді.',solution:'Камера затты танып, дұрыс контейнерді көрсетеді.',audience:'Қала тұрғындары, мектептер, кеңселер'},
+ {name:'AgroEye',one:'Өсімдік ауруын фотодан анықтайтын көмекші',problem:'Фермерлер ауруды кеш байқайды, түсім азаяды.',solution:'Жапырақтың суретін жүктесе, ЖИ ауруды атап, кеңес береді.',audience:'Шағын фермерлер мен бақ иелері'},
+ {name:'SmartQueue',one:'Емханадағы кезекті болжайтын сервис',problem:'Науқастар ұзақ кезекте уақытын жоғалтады.',solution:'Қолданба жүктемені болжап, ең қолайлы келу уақытын ұсынады.',audience:'Емхана науқастары мен әкімшілігі'},
+ {name:'QazVoice',one:'Қазақ тіліндегі дауыс көмекшісі',problem:'Қазақша дауыс көмекшілері аз және сапасы төмен.',solution:'Қазақша сөйлеуді түсініп, жауап беретін қолданба.',audience:'Қазақ тілді смартфон қолданушылары'},
+ {name:'FitPlan',one:'Жаттығу жоспарын жеке құрастыратын бот',problem:'Жас спортшыларда сауатты жоспар жоқ.',solution:'Бот мақсатыңа, уақытыңа және деңгейіңе қарай апталық жоспар құрады.',audience:'Жасөспірімдер мен студенттер'}
+];
+const CHANNELS=['Instagram','TikTok','Telegram','Таргетті жарнама','SEO','Инфлюенсерлер','Мектеп / университет','Электронды пошта'];
+const ROBOT_LINES=[
+ 'Сәлем! Мен — Robo, сенің робот-нұсқаушыңмын. AI Start — 11-сыныпқа арналған жасанды интеллект және цифрлық сауаттылық курсы.',
+ 'Курс 8 тақырыптан тұрады: жасанды интеллект негіздерінен бастап өз стартапың мен бизнес жоспарыңа дейін.',
+ 'Әр тақырыпта үш қадам бар: видеосы бар теория, біліміңді тексеру тапсырмалары және 5 сұрақтан тұратын тест.',
+ 'Тестте дұрыс жауап берсең — қуанышты сигнал, қателессең — ескерту сигналы шығады. Дыбысты жоғарыдағы батырмамен өшіруге болады.',
+ 'Лабиринттегі келесі есік алдыңғы тақырыпты толық аяқтағанда ғана ашылады. Бастайық па?'];
+
+/* ============ Пиктограммалар ============ */
+const mk=(inner)=>`<svg viewBox="0 0 120 120" aria-hidden="true">${inner.replace(/<(path|circle|rect|line|polyline|ellipse)\b/g,'<$1 pathLength="1"')}</svg>`;
+const PIC=(()=>{
+  let net='';const Ls=[[[24,36],[24,60],[24,84]],[[60,28],[60,60],[60,92]],[[96,48],[96,72]]];
+  for(let l=0;l<2;l++)for(const a of Ls[l])for(const b of Ls[l+1])net+=`<line x1="${a[0]}" y1="${a[1]}" x2="${b[0]}" y2="${b[1]}" stroke-width="2" opacity=".55"/>`;
+  Ls.flat().forEach(p=>net+=`<circle cx="${p[0]}" cy="${p[1]}" r="7" fill="var(--surface)"/>`);
+  let gear='<circle cx="60" cy="60" r="15"/><circle cx="60" cy="60" r="31"/>';
+  for(let k=0;k<8;k++){const a=k*Math.PI/4,c=Math.cos(a),s=Math.sin(a);gear+=`<line x1="${(60+c*31).toFixed(1)}" y1="${(60+s*31).toFixed(1)}" x2="${(60+c*43).toFixed(1)}" y2="${(60+s*43).toFixed(1)}" stroke-width="9"/>`;}
+  return {
+   brain:mk('<path d="M60 22C52 12 34 16 32 30c-10 2-15 14-9 23-5 9 1 20 11 22 2 10 15 16 26 7"/><path d="M60 22c8-10 26-6 28 8 10 2 15 14 9 23 5 9-1 20-11 22-2 10-15 16-26 7"/><path d="M60 22v60"/><path d="M42 48h18M60 62h18M44 72h16"/>'),
+   eye:mk('<path d="M12 60Q60 18 108 60Q60 102 12 60Z"/><circle cx="60" cy="60" r="16"/><circle cx="60" cy="60" r="5" fill="currentColor"/>'),
+   chat:mk('<path d="M22 28h76a8 8 0 0 1 8 8v36a8 8 0 0 1-8 8H58L38 98V80H22a8 8 0 0 1-8-8V36a8 8 0 0 1 8-8z"/><circle cx="42" cy="54" r="3" fill="currentColor"/><circle cx="60" cy="54" r="3" fill="currentColor"/><circle cx="78" cy="54" r="3" fill="currentColor"/>'),
+   chart:mk('<path d="M22 20v80h82"/><polyline points="32,82 50,62 68,70 92,34"/><circle cx="32" cy="82" r="4"/><circle cx="50" cy="62" r="4"/><circle cx="68" cy="70" r="4"/><circle cx="92" cy="34" r="4"/>'),
+   network:mk(net),
+   gear:mk(gear),
+   rocket:mk('<path d="M60 14C78 32 78 66 68 86H52C42 66 42 32 60 14Z"/><circle cx="60" cy="50" r="8"/><path d="M52 72L36 90l16-4M68 72l16 18-16-4"/><path d="M55 92Q60 108 65 92"/>'),
+   target:mk('<circle cx="56" cy="64" r="36"/><circle cx="56" cy="64" r="22"/><circle cx="56" cy="64" r="8"/><path d="M58 62L98 22M98 22v16M98 22H82"/>'),
+   megaphone:mk('<path d="M26 50L72 30v62L26 72z"/><path d="M26 50v22"/><path d="M38 74l6 22h12l-4-20"/><path d="M82 46q12 14 0 28M92 36q20 24 0 48"/>'),
+   coin:mk('<circle cx="60" cy="60" r="38"/><circle cx="60" cy="60" r="28" stroke-width="2"/><text class="nd" x="60" y="72" text-anchor="middle" font-size="34" font-weight="800" font-family="Nunito,sans-serif">₸</text>'),
+   bulb:mk('<path d="M60 16a28 28 0 0 1 16 51v11H44V67A28 28 0 0 1 60 16z"/><path d="M48 90h24M52 100h16"/><path d="M60 4v4M18 30l4 3M102 30l-4 3"/>'),
+   doc:mk('<rect x="28" y="14" width="64" height="92" rx="9"/><path d="M42 36h36M42 52h36M42 68h22"/><path d="M70 84l8 8 14-16" />'),
+   people:mk('<circle cx="42" cy="44" r="12"/><path d="M18 98q0-30 24-30t24 30"/><circle cx="82" cy="50" r="10"/><path d="M62 98q2-24 20-24t20 24"/>'),
+   phone:mk('<rect x="34" y="12" width="52" height="96" rx="12"/><path d="M52 22h16"/><rect x="42" y="36" width="36" height="40" rx="6"/><path d="M56 48l12 8-12 8z"/><circle cx="60" cy="92" r="4"/>'),
+   shield:mk('<path d="M60 14L90 26v30c0 22-14 38-30 46C44 94 30 78 30 56V26z"/><path d="M45 58l11 11 20-22"/>'),
+   check:mk('<circle cx="60" cy="60" r="40"/><path d="M40 62l14 14 28-32"/>')
+  };
+})();
+
+/* ============ Робот ============ */
+function robot(cls=''){return `<svg class="robot ${cls}" viewBox="0 0 200 240" role="img" aria-label="Robo — достық робот">
+<ellipse cx="100" cy="228" rx="54" ry="8" fill="#142044" opacity=".18"/>
+<rect x="86" y="106" width="28" height="18" rx="6" fill="#aab9de"/>
+<rect x="56" y="118" width="88" height="84" rx="32" fill="url(#gBody)"/>
+<rect x="76" y="138" width="48" height="34" rx="11" fill="url(#gVisor)"/>
+<text x="100" y="162" text-anchor="middle" font-family="Nunito,sans-serif" font-weight="800" font-size="19" fill="#5ee6ff">AI</text>
+<rect x="30" y="128" width="26" height="58" rx="13" fill="url(#gBody)" transform="rotate(8 43 128)"/>
+<circle cx="40" cy="190" r="12" fill="url(#gLil)"/>
+<g class="wave"><rect x="144" y="128" width="26" height="58" rx="13" fill="url(#gBody)"/><circle cx="157" cy="190" r="12" fill="url(#gLil)"/></g>
+<rect x="76" y="198" width="20" height="22" rx="9" fill="#9fb4e0"/><rect x="104" y="198" width="20" height="22" rx="9" fill="#9fb4e0"/>
+<line x1="100" y1="30" x2="100" y2="14" stroke="#8aa3d6" stroke-width="5" stroke-linecap="round"/>
+<circle class="ant" cx="100" cy="10" r="8" fill="url(#gLil)"/>
+<circle cx="35" cy="72" r="11" fill="url(#gLil)"/><circle cx="165" cy="72" r="11" fill="url(#gLil)"/>
+<rect x="38" y="28" width="124" height="86" rx="36" fill="url(#gHead)"/>
+<ellipse cx="72" cy="44" rx="22" ry="8" fill="#fff" opacity=".6"/>
+<rect x="52" y="44" width="96" height="56" rx="24" fill="url(#gVisor)"/>
+<ellipse class="eye" cx="80" cy="70" rx="9" ry="12" fill="#5ee6ff"/><ellipse class="eye" cx="120" cy="70" rx="9" ry="12" fill="#5ee6ff"/>
+<circle cx="83" cy="65" r="3" fill="#fff" opacity=".9"/><circle cx="123" cy="65" r="3" fill="#fff" opacity=".9"/>
+<path class="mouth" d="M90 88Q100 96 110 88" fill="none" stroke="#5ee6ff" stroke-width="4" stroke-linecap="round"/>
+</svg>`;}
+
+/* ============ Көмекшілер ============ */
+const $=(s,r=document)=>r.querySelector(s);
+const $$=(s,r=document)=>[...r.querySelectorAll(s)];
+const esc=s=>String(s==null?'':s).replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+const shuffle=a=>{const r=[...a];for(let i=r.length-1;i>0;i--){const j=Math.floor(Math.random()*(i+1));[r[i],r[j]]=[r[j],r[i]];}return r;};
+const reduce=()=>window.matchMedia&&matchMedia('(prefers-reduced-motion: reduce)').matches;
+const app=$('#app');
+
+let state=(()=>{try{const s=JSON.parse(localStorage.getItem('aistart')||'null');if(s&&Array.isArray(s.done)&&s.done.length===8)return s;}catch(e){}
+  return {done:Array(8).fill(false),pr:Array(8).fill(false),name:'',sound:true,plan:null};})();
+function save(){try{localStorage.setItem('aistart',JSON.stringify(state));}catch(e){}}
+const isOpen=n=>n===0||state.done[n-1];
+const doneCount=()=>state.done.filter(Boolean).length;
+const progPct=()=>{const sp=state.sp||[];let s=0;for(let i=0;i<8;i++)s+=state.done[i]?1:Math.min(.95,sp[i]||0);return Math.round(s/8*100);};
+
+let toastT;
+function toast(msg){const t=$('#toast');t.textContent=msg;t.classList.add('on');clearTimeout(toastT);toastT=setTimeout(()=>t.classList.remove('on'),2600);}
+
+/* ============ Дыбыс ============ */
+let ac;
+function tone(f,t0,d,type,vol,f2){const o=ac.createOscillator(),g=ac.createGain(),t=ac.currentTime+t0;o.type=type;o.frequency.setValueAtTime(f,t);if(f2)o.frequency.exponentialRampToValueAtTime(f2,t+d);
+  g.gain.setValueAtTime(0.0001,t);g.gain.exponentialRampToValueAtTime(vol,t+.02);g.gain.exponentialRampToValueAtTime(0.0001,t+d);o.connect(g);g.connect(ac.destination);o.start(t);o.stop(t+d+.05);}
+function sfx(k){if(!state.sound)return;try{ac=ac||new(window.AudioContext||window.webkitAudioContext)();if(ac.state==='suspended')ac.resume();
+  if(k==='ok'){tone(660,0,.14,'sine',.2);tone(990,.12,.26,'sine',.2);}
+  else if(k==='bad'){tone(230,0,.32,'sawtooth',.13,110);tone(170,.12,.38,'square',.08,80);}
+  else if(k==='click'){tone(520,0,.07,'triangle',.09);}
+  else if(k==='lock'){tone(190,0,.14,'square',.09);tone(150,.1,.16,'square',.09);}
+  else if(k==='win'){[523,659,784,1047].forEach((f,i)=>tone(f,i*.12,.28,'triangle',.18));}
+ }catch(e){}}
+function updSound(){const b=$('#snd');if(!b)return;b.innerHTML=state.sound
+  ?'<svg viewBox="0 0 24 24"><path d="M4 9v6h4l5 4V5L8 9z"/><path d="M16.5 8.5a5 5 0 0 1 0 7M19 6a8.5 8.5 0 0 1 0 12"/></svg><span class="lbl">Дыбыс</span>'
+  :'<svg viewBox="0 0 24 24"><path d="M4 9v6h4l5 4V5L8 9z"/><path d="M17 9l5 6M22 9l-5 6"/></svg><span class="lbl">Өшірулі</span>';
+  b.setAttribute('aria-pressed',state.sound?'true':'false');}
+function updHead(){const h=$('#hp');if(h)h.innerHTML='<b>'+progPct()+'%</b><span class="lbl"> өтілді</span>';}
+
+function confetti(){if(reduce())return;const cols=['#2f74b8','#b8a6f2','#6f55d8','#6aa8f0','#1c9a68','#f2c14e'];
+  for(let i=0;i<46;i++){const s=document.createElement('span');s.className='cf';s.style.left=Math.random()*100+'vw';s.style.background=cols[i%cols.length];
+    s.style.animationDelay=Math.random()*.6+'s';s.style.animationDuration=(1.8+Math.random()*1.4)+'s';document.body.appendChild(s);setTimeout(()=>s.remove(),4200);}}
+
+/* ============ Артқы фон анимациясы ============ */
+(function(){const c=$('#bg');const x=c.getContext&&c.getContext('2d');if(!x)return;let w=0,h=0,pts=[],dpr=1,col={a:'#2f74b8',b:'#b8a6f2'},fr=0;
+  function colors(){const cs=getComputedStyle(document.documentElement);col.a=cs.getPropertyValue('--blue').trim()||col.a;col.b=cs.getPropertyValue('--lilac').trim()||col.b;}
+  function rs(){dpr=Math.min(window.devicePixelRatio||1,2);w=innerWidth;h=innerHeight;c.width=w*dpr;c.height=h*dpr;x.setTransform(dpr,0,0,dpr,0,0);
+    const n=Math.max(18,Math.min(60,Math.round(w*h/24000)));pts=Array.from({length:n},()=>({x:Math.random()*w,y:Math.random()*h,vx:(Math.random()-.5)*.35,vy:(Math.random()-.5)*.35,r:2+Math.random()*3,k:Math.random()<.5}));}
+  function draw(){x.clearRect(0,0,w,h);fr++;if(fr%120===1)colors();
+    for(const p of pts){p.x+=p.vx;p.y+=p.vy;if(p.x<0||p.x>w)p.vx*=-1;if(p.y<0||p.y>h)p.vy*=-1;}
+    x.lineWidth=1;
+    for(let i=0;i<pts.length;i++)for(let j=i+1;j<pts.length;j++){const a=pts[i],b=pts[j],d=Math.hypot(a.x-b.x,a.y-b.y);
+      if(d<150){x.globalAlpha=(1-d/150)*.22;x.strokeStyle=col.a;x.beginPath();x.moveTo(a.x,a.y);x.lineTo(b.x,b.y);x.stroke();}}
+    for(const p of pts){x.globalAlpha=.4;x.fillStyle=p.k?col.a:col.b;x.beginPath();x.arc(p.x,p.y,p.r,0,6.283);x.fill();}
+    x.globalAlpha=1;if(!reduce())requestAnimationFrame(draw);}
+  colors();rs();addEventListener('resize',rs);draw();})();
+
+/* ============ Маршрутизация ============ */
+let L=null,talkT=null,typeT=null,vt=null,vp=null;
+function go(h){if(location.hash==='#'+h)route();else location.hash=h;}
+function stopAll(){if(vt){clearInterval(vt);vt=null;}clearInterval(talkT);clearInterval(typeT);}
+function route(){stopAll();const h=location.hash.slice(1);
+  if(h.startsWith('topic-')){const n=parseInt(h.slice(6),10)-1;if(n>=0&&n<8&&isOpen(n)){startLesson(n);return;}if(n>=0&&n<8){toast('Алдымен алдыңғы тақырыпты аяқтау керек');renderMaze();return;}}
+  if(h==='maze'||h==='map'){renderMaze();return;}
+  renderHome();window.scrollTo(0,0);}
+addEventListener('hashchange',route);
+
+/* ============ Басты бет ============ */
+const FLOW=[
+ ['Теория','Жалпы мәлімет, терминдер, суреттер және қысқа видео.','<path d="M20 18h44a10 10 0 0 1 10 10v68a8 8 0 0 0-8-8H20z"/><path d="M100 18H76a10 10 0 0 0-10 10v68a8 8 0 0 1 8-8h26z"/>'],
+ ['Біліміңді тексер','Тапсырмалар. Дұрыс жауабы көрсетіледі.','<path d="M24 92l8-24L84 16l20 20-52 52z"/><path d="M72 28l20 20"/>'],
+ ['Тест','5 сұрақ, дыбыс сигналымен. Өту үшін 4 дұрыс жауап керек.','<circle cx="60" cy="60" r="42"/><path d="M42 62l12 12 24-26"/>'],
+ ['Келесі деңгей','Лабиринттегі келесі есік ашылады.','<rect x="30" y="52" width="60" height="48" rx="10"/><path d="M42 52V38a18 18 0 0 1 34-8"/>']];
+const SUB=['ЖИ деген не, қайда қолданылады','Деректен үйренетін модельдер','Нейрон, қабат, активация','Желіні қадам-қадам жобала','Идеядан MVP-ға дейін','Питч, KPI, аудитория','Жарнама және IT-өнімдер',''];
+let curView='home';
+const mqW=window.matchMedia?matchMedia('(min-width: 820px)'):{matches:true};
+if(mqW.addEventListener)mqW.addEventListener('change',()=>{if(curView==='maze')renderMaze();});
+const wideMaze=()=>!!mqW.matches;
+function mazeGeom(wide){const g={wide};
+  if(wide){g.W=1000;g.H=640;const xs=[170,410,650,890];g.pts=[...xs.map(x=>[x,170]),...xs.slice().reverse().map(x=>[x,450])];
+    g.d='M 45 170 L 890 170 C 1000 170, 1000 450, 890 450 L 170 450 L 45 450';g.lens=[125,365,605,845,1175,1415,1655,1895];g.total=2020;}
+  else{g.W=400;g.H=1100;g.pts=Array.from({length:8},(_,i)=>[i%2?300:100,95+i*128]);let d='M 100 95';
+    for(let i=1;i<8;i++){const a=g.pts[i-1],b=g.pts[i];d+=` C ${a[0]} ${a[1]+70}, ${b[0]} ${b[1]-70}, ${b[0]} ${b[1]}`;}
+    g.d=d+' L 300 1048';g.lens=Array.from({length:8},(_,k)=>k*260);g.total=1877;}
+  return g;}
+function mazeSVG(){
+  const wide=wideMaze(),g=mazeGeom(wide),cur=state.done.findIndex(v=>!v),all=cur<0;let walls='',stubs='',marks='';
+  if(wide){
+    walls+=`<rect class="wl" x="80" y="288" width="760" height="80" rx="40"/><text x="460" y="340" text-anchor="middle" class="wtx">AI START · 11</text>`;
+    for(let i=0;i<6;i++)walls+=`<rect class="wl" x="${70+i*150}" y="30" width="110" height="36" rx="18"/><rect class="wl" x="${100+i*150}" y="588" width="110" height="34" rx="17"/>`;
+    [[290,170,108],[770,170,108],[530,450,522],[770,450,522]].forEach(s=>{stubs+=`<path class="lane" d="M ${s[0]} ${s[1]} V ${s[2]}" stroke-width="30"/><text x="${s[0]}" y="${s[2]+(s[2]>s[1]?-12:18)}" text-anchor="middle" class="mkc" style="fill:var(--lilac-deep)">×</text>`;});
+    marks=`<g transform="translate(45 170)"><circle r="24" fill="#fff"/><path d="M-6 -10L11 0-6 10z" fill="var(--blue)"/></g><text x="45" y="214" text-anchor="middle" class="mkc">БАСТАУ</text>
+      <g transform="translate(45 450)"><circle r="24" fill="${all?'var(--good)':'#fff'}"/><path d="M-6 -11V11M-6 -11H10L5 -4L10 3H-6" fill="none" stroke="${all?'#fff':'var(--lilac-deep)'}" stroke-width="3.5" stroke-linecap="round" stroke-linejoin="round"/></g><text x="45" y="494" text-anchor="middle" class="mkc">ФИНИШ</text>`;
+  }else{
+    for(let i=0;i<8;i++){const l=i%2===0;walls+=`<rect class="wl" x="${l?334:16}" y="${g.pts[i][1]-34}" width="50" height="64" rx="18"/><rect class="wl" x="${l?16:334}" y="${g.pts[i][1]+38}" width="50" height="46" rx="18"/>`;}
+    marks=`<g transform="translate(300 1048)"><circle r="22" fill="${all?'var(--good)':'#fff'}"/><path d="M-6 -11V11M-6 -11H10L5 -4L10 3H-6" fill="none" stroke="${all?'#fff':'var(--lilac-deep)'}" stroke-width="3.5" stroke-linecap="round" stroke-linejoin="round"/></g><text x="300" y="1090" text-anchor="middle" class="mkc">ФИНИШ</text>`;
+  }
+  const lit=all?1000:Math.max(0,Math.round(g.lens[cur]/g.total*1000)),lw=wide?62:58;
+  let nodes='';
+  for(let i=0;i<8;i++){
+    const [x,y]=g.pts[i],dn=state.done[i],op=isOpen(i),fill=dn?'var(--good)':op?'var(--blue)':'var(--lock)';
+    let inner;
+    if(dn)inner=`<path d="M-12 1l8 9 17-19" fill="none" stroke="#fff" stroke-width="5" stroke-linecap="round" stroke-linejoin="round"/>`;
+    else if(op)inner=`<text y="9" text-anchor="middle" font-size="26" font-weight="800" fill="#fff" style="font-family:var(--f-body)">${i+1}</text>`;
+    else inner=`<rect x="-11" y="-3" width="22" height="16" rx="4" fill="#fff"/><path d="M-7 -3v-5a7 7 0 0 1 14 0v5" fill="none" stroke="#fff" stroke-width="4" stroke-linecap="round"/>`;
+    let lab;
+    if(wide){const ln=T[i].lines.map((s,k)=>`<tspan x="${x}" dy="${k?18:0}">${esc(s)}</tspan>`).join('');
+      lab=`<text class="cap" x="${x}" y="${y+60}" text-anchor="middle">${i+1}-ТАҚЫРЫП</text><text class="lbl ${op?'':'lk'}" x="${x}" y="${y+80}" text-anchor="middle">${ln}</text>`;}
+    else{const left=i%2===0,tx=left?x+48:x-48,anc=left?'start':'end',ln=T[i].lines.map((s,k)=>`<tspan x="${tx}" dy="${k?17:0}">${esc(s)}</tspan>`).join('');
+      lab=`<text class="cap" x="${tx}" y="${y-14}" text-anchor="${anc}">${i+1}-ТАҚЫРЫП</text><text class="lbl ${op?'':'lk'}" x="${tx}" y="${y+6}" text-anchor="${anc}" style="font-size:14.5px">${ln}</text>`;}
+    nodes+=`<g class="node" data-act="node" data-i="${i}" role="button" tabindex="0" aria-label="${i+1}-тақырып: ${esc(T[i].title)}${dn?', аяқталды':op?'':', құлыпталған'}">
+      <g transform="translate(${x} ${y})">${i===cur?'<circle class="pulse" r="38"/>':''}<g class="circ"><circle r="39" fill="#fff"/><circle r="33" fill="${fill}"/>${inner}</g></g>${lab}</g>`;
+  }
+  let tok='';if(cur>=0){const [x,y]=g.pts[cur];tok=`<g class="bob"><g transform="translate(${x-17} ${y-84})"><rect width="34" height="28" rx="11" fill="url(#gHead)" stroke="#8aa3d6" stroke-width="2"/><rect x="5" y="6" width="24" height="15" rx="7" fill="url(#gVisor)"/><circle cx="12" cy="13.5" r="3" fill="#5ee6ff"/><circle cx="22" cy="13.5" r="3" fill="#5ee6ff"/><path d="M17 6V0" stroke="#8aa3d6" stroke-width="2.5"/><circle cx="17" cy="0" r="3" fill="url(#gLil)"/></g></g>`;}
+  return `<svg class="${wide?'':'nar'}" viewBox="0 0 ${g.W} ${g.H}" role="group" aria-label="Курс лабиринті">${walls}${stubs}
+    <path class="lane" d="${g.d}" stroke-width="${lw}"/><path class="dash" d="${g.d}" stroke-width="3"/>
+    ${lit>0?`<path class="lit" pathLength="1000" d="${g.d}" stroke-width="10" stroke-dasharray="${lit} 1000"/>`:''}${marks}${nodes}${tok}</svg>`;
+}
+function ringHTML(n){const R=34,C=2*Math.PI*R;return `<svg class="ring" viewBox="0 0 84 84"><circle cx="42" cy="42" r="${R}" fill="none" stroke="var(--line)" stroke-width="9"/>
+  <circle cx="42" cy="42" r="${R}" fill="none" stroke="var(--blue)" stroke-width="9" stroke-linecap="round" stroke-dasharray="${C.toFixed(1)}" stroke-dashoffset="${(C*(1-progPct()/100)).toFixed(1)}" transform="rotate(-90 42 42)"/><text x="42" y="48" text-anchor="middle">${progPct()}%</text></svg>`;}
+function nextCardHTML(){const n=doneCount(),cur=state.done.findIndex(v=>!v);
+  return cur>=0?`<div class="tcard"><div class="trow"><span class="num">${cur+1}</span><h3>${esc(T[cur].title)}</h3></div><button class="btn" data-act="open" data-i="${cur}">${n?'Жалғастыру':'Сабақты бастау'}</button></div>`
+    :`<div class="tcard"><div class="trow"><span class="num">✓</span><h3>Курс аяқталды!</h3></div></div>`;}
+function renderMaze(){
+  stopAll();L=null;curView='maze';const n=doneCount(),cur=state.done.findIndex(v=>!v);
+  const seg=T.map((t,i)=>`<button class="sg ${state.done[i]?'dn':i===cur?'cu':''}" data-act="node" data-i="${i}" aria-label="${i+1}-тақырып">${state.done[i]?'✓':isOpen(i)?i+1:'🔒'.replace('🔒','•')}</button>`).join('');
+  app.innerHTML=`<section class="mz"><div class="mzhead"><div><span class="eyebrow">Лабиринт · 8 бөлме</span><h1>Курс лабиринті</h1>
+    <p class="muted" style="max-width:40em">Роботпен бірге бөлмелерді бір-бірлеп аш. Тақырыпты теория, видео, практика және тест арқылы аяқтамайынша, келесі бөлменің құлпы ашылмайды.</p></div>
+    <div class="mzprog">${ringHTML(n)}<div><b>${progPct()}%</b><p class="muted" style="font-size:.9rem">курс өтілді</p></div></div></div>
+    <div class="segs">${seg}</div><div class="board">${mazeSVG()}</div></section>`;
+  updHead();updSound();window.scrollTo(0,0);
+}
+function countUp(){$$('.cnt').forEach(el=>{const to=+el.dataset.n;if(reduce()){el.textContent=to;return;}let v=0;const iv=setInterval(()=>{v+=Math.max(1,Math.ceil(to/28));if(v>=to){v=to;clearInterval(iv);}el.textContent=v;},45);});}
+function renderHome(){
+  L=null;curView='home';
+  const orbs=[['brain',4,6,0],['chart',82,4,-1.2],['network',-2,44,-2.4],['rocket',90,46,-.8],['megaphone',6,80,-1.8],['doc',80,82,-3]];
+  const mq=T.map(t=>`<span>${esc(t.title)}</span>`).join('');
+  app.innerHTML=`
+  <section class="hero">
+    <div><span class="eyebrow">11-сынып · Жасанды интеллект және цифрлық сауаттылық</span>
+      <h1><span>AI Start</span></h1>
+      <p class="lead">Идеядан өз стартапыңа дейінгі ойын-курс. Роботпен бірге лабиринттен өт, тапсырма орында, тесттен өт және соңында өз бизнес жоспарыңды құрастыр.</p>
+      <div class="cta"><button class="btn solid" data-act="maze">Лабиринтті бастау →</button><button class="btn" data-act="talk">Робот не дейді?</button></div></div>
+    <div class="rstage">${orbs.map(o=>`<span class="orb" style="left:${o[1]}%;top:${o[2]}%;animation-delay:${o[3]}s"><span class="pic">${PIC[o[0]]}</span></span>`).join('')}
+      <div class="bubble" id="rbub" aria-live="polite"><span id="rtext"></span></div>${robot('float talk')}<div class="bnav" id="rdots"></div></div>
+  </section>
+  <div class="marq" aria-hidden="true"><div class="mq">${mq}${mq}</div></div>
+  <section id="about"><div class="sh"><h2>Платформа қалай жұмыс істейді</h2><p>Әр тақырып төрт белестен тұратын жол. Алдыңғысын аяқтамай, келесісі ашылмайды.</p></div>
+    <ol class="flow">${FLOW.map((f,i)=>`<li><span class="fi"><svg viewBox="0 0 120 120">${f[2]}</svg></span><h3>${i+1}. ${f[0]}</h3><p>${f[1]}</p></li>`).join('')}</ol></section>
+  <div class="band">${robot('float')}<div><h2>Лабиринт сені күтіп тұр</h2><div class="cta" style="justify-content:center"><button class="btn solid" data-act="maze">${doneCount()?'Жалғастыру':'Бастау'} →</button></div></div></div>`;
+  updHead();updSound();startTalk();countUp();
+}
+let tIdx=0;
+function say(i){tIdx=i;const el=$('#rtext');if(!el)return;clearInterval(typeT);const txt=ROBOT_LINES[i];let k=0;const rb=$('.rstage .robot');if(rb)rb.classList.add('talk');
+  if(reduce()){el.textContent=txt;if(rb)rb.classList.remove('talk');}
+  else typeT=setInterval(()=>{k+=2;el.textContent=txt.slice(0,k);if(k>=txt.length){clearInterval(typeT);if(rb)rb.classList.remove('talk');}},24);
+  const dots=$('#rdots');if(dots)dots.innerHTML=ROBOT_LINES.map((_,j)=>`<button class="dot ${j===i?'on':''}" data-act="say" data-i="${j}" aria-label="${j+1}-хабар"></button>`).join('');}
+function startTalk(){say(0);talkT=setInterval(()=>{if(!$('#rtext')){clearInterval(talkT);return;}say((tIdx+1)%ROBOT_LINES.length);},9000);}
+
+/* ============ Сабақ ============ */
+function stepsOf(n){return T[n].builder?['Теория','Құрастыру']:['Теория','Біліміңді тексер','Тест'];}
+const TIPS={'Теория':'Теорияны оқып, «Видео» батырмасын басып қысқа видеоны көр. Дайын болсаң — «Алға» батырмасын бас.','Біліміңді тексер':'Алдымен өзің тырыс. Қиын болса, «Жауабын көрсету» батырмасы бар.','Тест':'5 сұрақ. Дұрыс және қате жауаптың дыбысын тыңда!','Құрастыру':'Өз стартапыңды ойлап тап. Бастамаға қанша ақша керек екенін есепте, ал қаржы бөлімінде нөлдік нүкте мен өтелу мерзімін графиктен көр.'};
+function startLesson(n){
+  curView='lesson';L={t:n,step:0,ts:[],q:null,bstep:0,plan:Object.assign(defPlan(),state.plan||{})};window.scrollTo(0,0);
+  app.innerHTML=`<div class="lesson">
+    <div class="lbar"><button class="btn small ghost" data-act="maze">← Лабиринт</button><div class="ltitle"><span class="num">${n+1}</span><h2>${esc(T[n].title)}</h2></div></div>
+    <ol class="stepper" id="stp"></ol>
+    <div class="lgrid"><div class="lmain" id="lbody"></div>
+      <aside class="coach">${robot('float')}<div class="bubble" id="tip"></div></aside></div>
+    <div class="lnav" id="lnav"></div></div>`;
+  updHead();updSound();renderStep();
+}
+function renderStep(){
+  if(vt){clearInterval(vt);vt=null;}
+  const n=L.t,names=stepsOf(n),nm=names[L.step];
+  state.sp=state.sp||Array(8).fill(0);state.sp[n]=Math.max(state.sp[n]||0,L.step/names.length);save();updHead();
+  $('#stp').innerHTML=names.map((s,i)=>`<li class="${i<L.step?'done':i===L.step?'on':''}"><span class="sd">${i<L.step?'✓':i+1}</span>${s}</li>`).join('');
+  $('#tip').textContent=TIPS[nm];
+  const b=$('#lbody');
+  if(nm==='Теория'){b.innerHTML=theoryHTML();if(T[n].theory&&T[n].widget==='neuron')bindLab();}
+  else if(nm==='Біліміңді тексер'){if(!L.ts.length)L.ts=T[n].practice.map(initTask);b.innerHTML=practiceHTML();}
+  else if(nm==='Тест'){if(!L.q)startQuiz();b.innerHTML=quizHTML();}
+  else {b.innerHTML=builderHTML();bindBuilder();}
+  renderNav();
+}
+function renderNav(){
+  const n=L.t,names=stepsOf(n),nm=names[L.step],last=L.step===names.length-1;
+  let next='';
+  if(!last){const lock=nm==='Біліміңді тексер'&&!state.pr[n];next=`<button class="btn solid" data-act="next" ${lock?'disabled title="Алдымен барлық тапсырманы орында"':''}>Алға →</button>`;}
+  $('#lnav').innerHTML=`<button class="btn" data-act="prev">← Артқа</button>${next}`;
+}
+function theoryHTML(){
+  const t=T[L.t],th=t.theory,tg=th.terms.slice(0,3);
+  const pos=[[6,70],[48,8],[58,48]];
+  const scene=`<div class="scene"><div class="pic">${PIC[t.pic]}</div>${tg.map((x,i)=>`<span class="tag" style="left:${pos[i][0]}%;top:${pos[i][1]}%;animation-delay:${-i*1.4}s">${esc(x[0])}</span>`).join('')}<div class="rb">${robot('float')}</div></div>`;
+  const code=t.code?`<pre aria-label="Keras үлгісі"><code>model = keras.Sequential([
+  layers.Dense(64, activation="relu", input_shape=(784,)),
+  layers.Dense(10, activation="softmax")
+])
+model.compile(optimizer="adam", loss="sparse_categorical_crossentropy")
+model.fit(x_train, y_train, epochs=5)</code></pre>`:'';
+  return `<div class="vbtnrow"><button class="btn solid" data-act="tvideo" id="tvb">▶ Видео</button></div><div id="vwrap"></div><div class="theory"><div>${scene}</div><div class="tcol"><p class="lead">${esc(th.lead)}</p>
+   ${th.points.map(p=>`<div class="pt"><h4>${esc(p[0])}</h4><p>${esc(p[1])}</p></div>`).join('')}
+   ${t.widget==='neuron'?neuronLab():''}${code}
+   <div class="terms">${th.terms.map(x=>`<div class="term"><b>${esc(x[0])}</b><span>${esc(x[1])}</span></div>`).join('')}</div>
+   <div class="fact"><i>Білесің бе?</i><span>${esc(th.fact)}</span></div></div></div>`;
+}
+/* нейрон лабораториясы */
+function neuronLab(){return `<div class="lab"><h4>Мини-лаборатория: нейронды өзің басқар</h4>
+  <div class="sl">
+   <label>x₁ <b id="lx1v">2</b><input type="range" id="lx1" min="0" max="5" step="1" value="2"></label>
+   <label>x₂ <b id="lx2v">3</b><input type="range" id="lx2" min="0" max="5" step="1" value="3"></label>
+   <label>w₁ <b id="lw1v">1</b><input type="range" id="lw1" min="-3" max="3" step="0.5" value="1"></label>
+   <label>w₂ <b id="lw2v">0.5</b><input type="range" id="lw2" min="-3" max="3" step="0.5" value="0.5"></label>
+   <label>b <b id="lbv">-1</b><input type="range" id="lb" min="-5" max="5" step="0.5" value="-1"></label>
+   <label>Активация<select id="lact"><option value="relu">ReLU</option><option value="sig">Сигмоида</option><option value="none">Жоқ</option></select></label></div>
+  <svg id="lsvg" viewBox="0 0 420 170" aria-label="Нейрон сызбасы"></svg><p class="res" id="lres"></p></div>`;}
+function bindLab(){
+  const g=id=>$('#'+id);const ids=['lx1','lx2','lw1','lw2','lb'];
+  function upd(){const v=ids.map(i=>parseFloat(g(i).value));ids.forEach((i,k)=>g(i+'v').textContent=v[k]);
+    const [x1,x2,w1,w2,b]=v,z=w1*x1+w2*x2+b,a=g('lact').value;let y=z;if(a==='relu')y=Math.max(0,z);if(a==='sig')y=1/(1+Math.exp(-z));
+    const sw=w=>(1+Math.abs(w)*2.2).toFixed(1),cl=w=>w>=0?'var(--blue)':'var(--bad)';
+    g('lsvg').innerHTML=`<line x1="60" y1="40" x2="210" y2="85" stroke="${cl(w1)}" stroke-width="${sw(w1)}"/><line x1="60" y1="130" x2="210" y2="85" stroke="${cl(w2)}" stroke-width="${sw(w2)}"/>
+     <line x1="250" y1="85" x2="360" y2="85" stroke="var(--lilac-deep)" stroke-width="3"/>
+     <circle cx="40" cy="40" r="22" fill="var(--blue-soft)" stroke="var(--blue)" stroke-width="3"/><text x="40" y="45" text-anchor="middle">${x1}</text>
+     <circle cx="40" cy="130" r="22" fill="var(--blue-soft)" stroke="var(--blue)" stroke-width="3"/><text x="40" y="135" text-anchor="middle">${x2}</text>
+     <circle cx="230" cy="85" r="30" fill="var(--lilac-soft)" stroke="var(--lilac-deep)" stroke-width="3"/><text x="230" y="90" text-anchor="middle">z=${+z.toFixed(2)}</text>
+     <circle cx="385" cy="85" r="26" fill="var(--good-soft)" stroke="var(--good)" stroke-width="3"/><text x="385" y="90" text-anchor="middle">${+y.toFixed(2)}</text>
+     <text x="130" y="52" text-anchor="middle">w₁=${w1}</text><text x="130" y="128" text-anchor="middle">w₂=${w2}</text>`;
+    g('lres').textContent=`z = ${w1}·${x1} + ${w2}·${x2} + (${b}) = ${+z.toFixed(2)}  →  шығыс y = ${+y.toFixed(3)}`;}
+  [...ids,'lact'].forEach(i=>g(i).addEventListener('input',upd));upd();}
+
+/* видео */
+const VID=[1,2,3];
+const SC=6500;
+function videoHTML(){const V=T[L.t].video,s=V.scenes;
+  if(VID[L.t])return `<div class="vid"><video id="tvid" controls playsinline preload="metadata" style="width:100%;border-radius:24px;background:#000;border:2px solid var(--line)" aria-label="${esc(T[L.t].title)} — видео"></video><p class="fb bad" id="verr" hidden>Видео бұл браузерде ашылмады. Chrome немесе Safari-де ашып көр.</p><div class="vctl"><span class="sp"></span><a class="btn small" target="_blank" rel="noopener noreferrer" href="https://www.youtube.com/results?search_query=${encodeURIComponent(T[L.t].yt)}">YouTube-та толық видео іздеу ↗</a></div><div class="extra"><h3 style="font:800 1.05rem var(--f-body);color:var(--blue-deep)">Қосымша ақпарат</h3><ul>${V.extra.map(x=>`<li>${esc(x)}</li>`).join('')}</ul></div></div>`;
+  return `<div class="vid"><div class="stage" id="vstage" aria-live="polite"></div>
+   <div class="vctl"><button class="btn small" data-act="vplay" id="vpb">Кідірту</button><button class="btn small ghost" data-act="vrestart">Басынан</button>
+   <div class="vbar" id="vbar" data-act="vseekbar" role="progressbar" aria-label="Видео барысы"><i id="vfill"></i></div><span class="pill" id="vtime">0:00</span></div>
+   <div class="vctl"><div class="vdots" id="vdots"></div><span class="sp"></span><a class="btn small" target="_blank" rel="noopener noreferrer" href="https://www.youtube.com/results?search_query=${encodeURIComponent(T[L.t].yt)}">YouTube-та толық видео іздеу ↗</a></div>
+   <div class="extra"><h3 style="font:800 1.05rem var(--f-body);color:var(--blue-deep)">Қосымша ақпарат</h3><ul>${V.extra.map(x=>`<li>${esc(x)}</li>`).join('')}</ul></div></div>`;}
+function startVideo(){if(VID[L.t]){const v=$('#tvid');if(v){v.addEventListener('error',()=>{const e=$('#verr');if(e)e.hidden=false;});v.src='v'+(L.t+1)+'.mp4';v.load();}return;}const V=T[L.t].video;vp={i:-1,ms:0,play:true};drawScene();
+  vt=setInterval(()=>{if(!$('#vstage')){clearInterval(vt);vt=null;return;}if(!vp.play)return;vp.ms+=100;const tot=V.scenes.length*SC;
+    if(vp.ms>=tot){vp.ms=tot;vp.play=false;}drawScene();},100);}
+function drawScene(){const V=T[L.t].video,n=V.scenes.length,i=Math.min(Math.floor(vp.ms/SC),n-1),st=$('#vstage');if(!st)return;
+  if(i!==vp.i){vp.i=i;const sc=V.scenes[i];st.innerHTML=`<div class="sc"><div class="pic">${PIC[sc.pic]}</div><h3>${esc(sc.title)}</h3><p>${esc(sc.text)}</p></div><div class="vr">${robot(vp.play?'talk':'')}</div>`;
+    $('#vdots').innerHTML=V.scenes.map((_,k)=>`<button class="dot ${k===i?'on':''}" data-act="vseek" data-i="${k}" aria-label="${k+1}-көрініс"></button>`).join('');}
+  const tot=n*SC;$('#vfill').style.width=(vp.ms/tot*100)+'%';
+  const f=s=>Math.floor(s/60)+':'+String(Math.floor(s%60)).padStart(2,'0');$('#vtime').textContent=f(vp.ms/1000)+' / '+f(tot/1000);
+  const pb=$('#vpb');pb.textContent=vp.play?'Кідірту':(vp.ms>=tot?'Қайта көру':'Ойнату');
+  const r=$('#vstage .vr .robot');if(r)r.classList.toggle('talk',vp.play);}
+
+/* практика */
+function initTask(p){const s={checked:false,ok:false,revealed:false,pick:null,val:'',sel:[]};
+  if(p.t==='c')s.opts=shuffle(p.o.map((_,i)=>i));if(p.t==='o')s.pool=shuffle(p.items.map((_,i)=>i));if(p.t==='m'){s.map=p.p.map(()=>null);s.rt=shuffle(p.p.map((_,j)=>j));s.cur=null;}if(p.t==='f')s.tf=p.s.map(()=>null);return s;}
+const norm=v=>String(v).trim().toLowerCase().replace(',','.').replace(/[%\s]/g,'');
+function ansText(p){return p.t==='c'?p.o[p.a]:p.t==='i'?(p.show||p.a[0]):p.t==='m'?p.p.map(x=>x[0]+' — '+x[1]).join('; '):p.t==='f'?p.s.map(x=>x[1]?'Дұрыс':'Қате').join(', '):p.items.join(' → ');}
+function taskHTML(i){const p=T[L.t].practice[i],s=L.ts[i];let body='';
+  if(p.t==='c')body=`<div class="opts">${s.opts.map(k=>{let c='opt';if(s.checked){if(k===p.a)c+=' ok';else if(k===s.pick&&!s.ok)c+=' bad';}else if(k===s.pick)c+=' sel';
+    return `<button class="${c}" data-act="pick" data-i="${i}" data-k="${k}" ${s.checked?'disabled':''}><span class="mk">${'ABCD'[s.opts.indexOf(k)]}</span>${esc(p.o[k])}</button>`;}).join('')}</div>`;
+  else if(p.t==='i')body=`<input class="tin" id="in${i}" type="text" inputmode="decimal" autocomplete="off" placeholder="Жауабың" value="${esc(s.val)}" ${s.checked?'disabled':''} data-i="${i}">`;
+  else if(p.t==='m')body=`<div class="mt"><div>${p.p.map((x,j)=>{const v=s.map[j];let c='opt';if(s.checked)c+=v===j?' ok':' bad';else if(s.cur===j)c+=' sel';
+    return `<button class="${c}" data-act="mL" data-i="${i}" data-k="${j}" ${s.checked?'disabled':''}><span class="mk">${j+1}</span>${esc(x[0])}${v!=null?`<small class="as">→ ${'ABCD'[s.rt.indexOf(v)]}</small>`:''}</button>`;}).join('')}</div><div>${s.rt.map((k,n)=>`<button class="opt ${s.map.includes(k)?'used':''}" data-act="mR" data-i="${i}" data-k="${k}" ${s.checked?'disabled':''}><span class="mk">${'ABCD'[n]}</span>${esc(p.p[k][1])}</button>`).join('')}</div></div><p class="muted" style="margin:8px 0 0;font-size:.85rem">Сол жақтан біреуін, содан кейін оң жақтан жұбын бас.</p>`;
+  else if(p.t==='f')body=`<div class="tfl">${p.s.map((x,j)=>{const v=s.tf[j],r=x[1]?1:0;return `<div class="tfr"><span>${esc(x[0])}</span><span class="tfb">${[['Дұрыс',1],['Қате',0]].map(([l,w])=>{let c='chip';if(s.checked){if(w===r)c+=' good';else if(v===w)c+=' bad';}else if(v===w)c+=' on';return `<button class="${c}" data-act="tf" data-i="${i}" data-k="${j}" data-v="${w}" ${s.checked?'disabled':''}>${l}</button>`;}).join('')}</span></div>`;}).join('')}</div>`;
+  else body=`<div class="pool">${s.pool.map(k=>`<button class="chip ${s.sel.includes(k)?'used':''}" data-act="ord" data-i="${i}" data-k="${k}" ${s.checked?'disabled':''}>${esc(p.items[k])}</button>`).join('')}</div>
+    <div class="oline">${s.sel.length?s.sel.map((k,n)=>`<span class="oitem"><b>${n+1}</b>${esc(p.items[k])}</span>`).join(''):'<span class="muted">Элементтерді дұрыс ретімен бас</span>'}</div>`;
+  let fb='';
+  if(s.checked){const right=s.ok;fb=`<div class="fb ${right?'ok':s.revealed?'info':'bad'}">${right?'Дұрыс!':s.revealed?'Дұрыс жауап:':'Қате.'}${right?'':` Дұрыс жауап: ${esc(ansText(p))}`}<small>${esc(p.e)}</small></div>`;}
+  const acts=s.checked?(s.ok?'':`<div class="acts"><button class="btn small" data-act="retry" data-i="${i}">Қайта көру</button></div>`)
+    :`<div class="acts"><button class="btn small solid" data-act="check" data-i="${i}">Тексеру</button>${p.t==='o'||p.t==='m'?`<button class="btn small ghost" data-act="clr" data-i="${i}">Тазалау</button>`:''}<button class="btn small ghost" data-act="reveal" data-i="${i}">Жауабын көрсету</button></div>`;
+  return `<article class="task ${s.checked?(s.ok?'ok':s.revealed?'':'bad'):''}" id="task${i}"><div class="th"><span class="num">${i+1}</span><p class="q">${esc(p.q)}</p></div>${body}${acts}${fb}</article>`;}
+function practiceStat(){const tot=L.ts.length,att=L.ts.filter(s=>s.checked).length,ok=L.ts.filter(s=>s.ok).length;
+  return `<div class="pstat"><span class="pill">Орындалды <b>${att}/${tot}</b></span><span class="pill">Дұрыс <b>${ok}</b></span>${att===tot?'<span class="fb ok" style="padding:6px 14px">Практика аяқталды! «Алға» арқылы тестке өт.</span>':''}</div>`;}
+function practiceHTML(){return `<div id="pstat">${practiceStat()}</div>${T[L.t].practice.map((_,i)=>taskHTML(i)).join('')}`;}
+function refreshTask(i){const el=$('#task'+i);if(el)el.outerHTML=taskHTML(i);$('#pstat').innerHTML=practiceStat();
+  if(L.ts.every(s=>s.checked)&&!state.pr[L.t]){state.pr[L.t]=true;save();}renderNav();}
+function checkTask(i,reveal){const p=T[L.t].practice[i],s=L.ts[i];
+  if(!reveal){
+    if(p.t==='c'&&s.pick==null)return toast('Алдымен жауапты таңда');
+    if(p.t==='i'){const el=$('#in'+i);s.val=el?el.value:s.val;if(!norm(s.val))return toast('Жауабыңды жаз');}
+    if(p.t==='o'&&s.sel.length<p.items.length)return toast('Барлық элементті ретке қой');
+    if(p.t==='m'&&s.map.includes(null))return toast('Барлық жұпты сәйкестендір');if(p.t==='f'&&s.tf.includes(null))return toast('Әр тұжырымға жауап бер');}
+  s.checked=true;s.revealed=!!reveal;
+  if(reveal)s.ok=false;else{s.ok=p.t==='c'?s.pick===p.a:p.t==='i'?p.a.map(norm).includes(norm(s.val)):p.t==='m'?s.map.every((v,j)=>v===j):p.t==='f'?s.tf.every((v,j)=>v===(p.s[j][1]?1:0)):s.sel.every((k,n)=>k===n);}
+  sfx(reveal?'click':s.ok?'ok':'bad');refreshTask(i);}
+
+/* тест */
+function startQuiz(){const q=T[L.t].test;L.q={i:0,score:0,ans:null,done:false,res:[],order:q.map(x=>shuffle(x.o.map((_,k)=>k)))};}
+function quizHTML(){const Q=L.q,qs=T[L.t].test;if(Q.done)return resultHTML();const it=qs[Q.i];
+  const dots=`<div class="qdots">${qs.map((_,k)=>`<i class="${Q.res[k]===true?'ok':Q.res[k]===false?'bad':k===Q.i?'cur':''}"></i>`).join('')}</div>`;
+  const opts=Q.order[Q.i].map((k,n)=>{let c='opt';if(Q.ans!=null){if(k===it.a)c+=' ok';else if(k===Q.ans)c+=' bad';}
+    return `<button class="${c}" data-act="qopt" data-k="${k}" ${Q.ans!=null?'disabled':''}><span class="mk">${'ABCD'[n]}</span>${esc(it.o[k])}</button>`;}).join('');
+  const fb=Q.ans!=null?`<div class="fb ${Q.ans===it.a?'ok':'bad'}" style="margin-top:12px">${Q.ans===it.a?'Дұрыс!':'Қате.'}<small>${esc(it.e)}</small></div>
+    <div class="acts" style="margin-top:12px"><button class="btn solid" data-act="qnext">${Q.i===qs.length-1?'Нәтижені көру':'Келесі сұрақ →'}</button></div>`:'';
+  return `<div class="card quiz">${dots}<p class="muted" style="font-weight:800;margin-bottom:6px">Сұрақ ${Q.i+1} / ${qs.length}</p><p class="q">${esc(it.q)}</p><div class="opts">${opts}</div>${fb}</div>`;}
+function resultHTML(){const Q=L.q,pass=Q.score>=4,n=L.t,last=n===6;
+  return `<div class="card result"><div class="score">${Q.score}/5</div>
+   <h3 style="font:700 1.5rem var(--f-display)">${pass?'Тамаша! Тест өтілді':'Тағы бір рет көрейік'}</h3>
+   <p class="muted">${pass?(last?'Соңғы тақырып — бизнес жоспар ашылды!':'Келесі тақырыптың есігі ашылды.'):'Өту үшін кемінде 4 дұрыс жауап керек. Теорияны қайта қарап, қайта тапсыр.'}</p>
+   <div class="acts" style="justify-content:center">${pass?`<button class="btn solid" data-act="${last?'open':'open'}" data-i="${n+1}">${n+2}-тақырыпқа өту →</button><button class="btn" data-act="maze">Лабиринтке оралу</button>`:''}<button class="btn ${pass?'ghost':'solid'}" data-act="qretry">Қайта тапсыру</button></div></div>`;}
+function answerQuiz(k){const Q=L.q;if(Q.ans!=null)return;const it=T[L.t].test[Q.i];Q.ans=k;const ok=k===it.a;Q.res[Q.i]=ok;if(ok)Q.score++;sfx(ok?'ok':'bad');$('#lbody').innerHTML=quizHTML();}
+function nextQuiz(){const Q=L.q;if(Q.i<T[L.t].test.length-1){Q.i++;Q.ans=null;}else{Q.done=true;
+  if(Q.score>=4){const was=state.done[L.t];state.done[L.t]=true;save();updHead();setTimeout(()=>{sfx('win');confetti();},150);if(!was)toast('Келесі есік ашылды!');}else sfx('bad');}
+  $('#lbody').innerHTML=quizHTML();window.scrollTo({top:0,behavior:reduce()?'auto':'smooth'});}
+
+/* ============ Бизнес жоспар құрастырушы ============ */
+function defPlan(){return {name:'',one:'',problem:'',solution:'',audience:'',channels:[],price:2500,vc:500,fixed:300000,units:400,team:'',risks:'',plan90:'',made:false,c_dev:150000,c_eq:200000,c_mk:100000,c_leg:50000,c_oth:50000,months:3,own:300000,growth:8};}
+const BSTEPS=['1. Идея','2. Аудитория','3. Бастапқы шығын','4. Табыс және қаржы','5. Команда'];
+const fmt=n=>Number.isFinite(n)?Math.round(n).toLocaleString('ru-RU'):'—';
+function fin(p){const price=+p.price||0,vc=+p.vc||0,fx=+p.fixed||0,u=+p.units||0,m=price-vc,be=m>0?Math.ceil(fx/m):null,rev=price*u,cost=fx+vc*u,profit=rev-cost;return {price,vc,fx,u,m,be,rev,cost,profit,roi:cost>0?profit/cost*100:0};}
+const COSTS=[['Өнімді жасау (бағдарлама, дизайн)','c_dev'],['Құрал-жабдық (ноутбук, телефон)','c_eq'],['Алғашқы жарнама','c_mk'],['Тіркеу және құжаттар','c_leg'],['Басқа шығындар','c_oth']];
+const PRE=[{c_dev:80000,c_eq:100000,c_mk:50000,c_leg:30000,c_oth:20000,months:2,own:150000},{c_dev:150000,c_eq:200000,c_mk:100000,c_leg:50000,c_oth:50000,months:3,own:300000},{c_dev:500000,c_eq:600000,c_mk:400000,c_leg:150000,c_oth:100000,months:6,own:500000}];
+function startup(p){const items=COSTS.map(c=>[c[0],c[1],Math.max(0,+p[c[1]]||0)]),months=Math.max(0,+p.months||0),reserve=(+p.fixed||0)*months,sum=items.reduce((a,x)=>a+x[2],0);return {items,months,reserve,sum,total:sum+reserve};}
+function sim(p,mult,total){const f=fin(p),g=(+p.growth||0)/100,N=24;let cum=-total,arr=[cum],pb=null;
+  for(let m=1;m<=N;m++){const u=f.u*mult*Math.pow(1+g,m-1);cum+=f.m*u-f.fx;arr.push(cum);if(pb==null&&cum>=0)pb=m;}
+  return {arr,pb,N};}
+function costBars(s){const rows=[...s.items.map(x=>[x[0],x[2]]),['Резерв: '+s.months+' ай × тұрақты шығын',s.reserve]],mx=Math.max(...rows.map(r=>r[1]),1);
+  return `<div class="cbar">${rows.map(r=>`<div class="cb"><span>${esc(r[0])}</span><span class="tr"><i style="width:${Math.max(2,r[1]/mx*100)}%"></i></span><b>${fmt(r[1])} ₸</b></div>`).join('')}</div>`;}
+function fld(id,label,val,type,ph){return `<div class="fld"><label for="${id}">${label}</label>${type==='ta'?`<textarea id="${id}" data-f="${id}" placeholder="${esc(ph||'')}">${esc(val)}</textarea>`:`<input id="${id}" data-f="${id}" type="${type||'text'}" ${type==='number'?'inputmode="numeric" min="0"':''} value="${esc(val)}" placeholder="${esc(ph||'')}">`}</div>`;}
+function builderHTML(){const p=L.plan;
+  if(p.made)return planHTML();
+  const tabs=`<div class="bsteps">${BSTEPS.map((s,i)=>`<button class="chip ${i===L.bstep?'on':''}" data-act="bstep" data-i="${i}">${s}</button>`).join('')}</div>`;
+  let body='';
+  if(L.bstep===0)body=`<div class="card">${tabs}<div class="acts" style="margin-bottom:12px"><button class="btn small" data-act="idea">ЖИ идея генераторы</button><span class="muted" style="align-self:center;font-size:.9rem">Идея таппасаң, генераторды бас</span></div>
+    ${fld('f_name','Стартап атауы',p.name,'text','мысалы, EcoSort')}${fld('f_one','Бір сөйлемде не істейді?',p.one,'text')}${fld('f_problem','Қандай мәселені шешеді?',p.problem,'ta')}${fld('f_solution','Сенің шешімің қандай?',p.solution,'ta')}</div>`;
+  else if(L.bstep===1)body=`<div class="card">${tabs}${fld('f_audience','Мақсатты аудитория кім?',p.audience,'text','жасы, қызығушылығы, қаласы')}
+    <div class="fld"><label>Жарнама арналарын таңда</label><div class="pool">${CHANNELS.map(c=>`<button class="chip tg ${p.channels.includes(c)?'on':''}" data-act="chan" data-c="${esc(c)}" aria-pressed="${p.channels.includes(c)}">${esc(c)}</button>`).join('')}</div></div></div>`;
+  else if(L.bstep===2)body=`<div class="card">${tabs}<h3 class="bh">Бастамаға қанша ақша керек?</h3><p class="muted" style="margin-bottom:10px">Өнім сатыла бастағанға дейінгі барлық шығынды жаз. Төменде жалпы сома мен өз қаражатыңа қарай жетіспейтін ақша автоматты есептеледі.</p>
+    <div class="acts" style="margin-bottom:12px"><span class="muted" style="align-self:center;font-weight:800">Мысал:</span><button class="btn small" data-act="preset" data-i="0">Шағын жоба</button><button class="btn small" data-act="preset" data-i="1">Орташа жоба</button><button class="btn small" data-act="preset" data-i="2">Үлкен жоба</button></div>
+    <div class="grid2">${COSTS.map(c=>fld('f_'+c[1],c[0]+', ₸',p[c[1]],'number')).join('')}${fld('f_months','Резерв: неше айлық тұрақты шығын?',p.months,'number')}${fld('f_own','Өз қаражатың, ₸',p.own,'number')}</div>
+    <div id="cost"></div></div>`;
+  else if(L.bstep===3)body=`<div class="card">${tabs}<p class="muted" style="margin-bottom:10px">Мысал мәндер қойылған. Өз идеяңа қарай өзгерт.</p><div class="grid2">
+    ${fld('f_price','Баға (теңге / бірлік)',p.price,'number')}${fld('f_vc','Айнымалы шығын (теңге / бірлік)',p.vc,'number')}${fld('f_fixed','Тұрақты шығын (теңге / ай)',p.fixed,'number')}${fld('f_units','Айына сатылым (бірлік)',p.units,'number')}${fld('f_growth','Сатылымның айлық өсімі, %',p.growth,'number')}</div>
+    <div id="fin"></div></div>`;
+  else body=`<div class="card">${tabs}${fld('f_team','Команда: кім қандай рөлде?',p.team,'ta','мысалы: Айгерім — дизайн, Нұрлан — бағдарламалау')}${fld('f_risks','Негізгі тәуекелдер және жауап жоспары',p.risks,'ta')}${fld('f_plan90','Алғашқы 90 күндегі қадамдар',p.plan90,'ta')}
+    <div class="acts"><button class="btn solid" data-act="makeplan">Бизнес жоспарды жасау</button></div></div>`;
+  return body;}
+function bindBuilder(){
+  if(L.plan.made)return;
+  $$('[data-f]').forEach(el=>el.addEventListener('input',()=>{const k=el.dataset.f.slice(2);L.plan[k]=el.type==='number'?el.value:el.value;state.plan=L.plan;save();if(L.bstep===2)drawCost();if(L.bstep===3)drawFin();}));
+  if(L.bstep===2)drawCost();if(L.bstep===3)drawFin();}
+function niceMax(v){if(v<=0)return 1;const e=Math.pow(10,Math.floor(Math.log10(v))),f=v/e;return (f<=1?1:f<=2?2:f<=5?5:10)*e;}
+function drawCost(){const host=$('#cost');if(!host)return;const p=L.plan,s=startup(p),f=fin(p),own=Math.max(0,+p.own||0),gap=Math.max(0,s.total-own),pct=s.total>0?Math.min(100,own/s.total*100):0;
+  host.innerHTML=`<div class="need"><span>Бастау үшін жалпы қанша керек</span><b>${fmt(s.total)} ₸</b></div>${costBars(s)}
+   <p class="res">Өз қаражатың: ${fmt(own)} ₸ (${Math.round(pct)}%)</p><div class="fund"><i style="width:${pct}%"></i></div>
+   <div class="fb ${gap>0?'info':'ok'}">${gap>0?`Жетіспейді: ${fmt(gap)} ₸. Оны инвестордан, грантан, акселератордан немесе жақындарыңнан іздеуге болады.`:'Өз қаражатың жеткілікті. Тамаша!'}<small>Бастапқы шығын: ${fmt(s.sum)} ₸ + резерв: ${fmt(s.reserve)} ₸. Ай сайынғы тұрақты шығын: ${fmt(f.fx)} ₸ (оны келесі бөлімде өзгертуге болады).</small></div>`;}
+function drawFin(){const host=$('#fin');if(!host)return;const p=L.plan,f=fin(p),s=startup(p),sc=L.scn==null?1:L.scn,MULT=[.6,1,1.4],SN=['Пессимист (−40%)','Базалық','Оптимист (+40%)'],sm=sim(p,MULT[sc],s.total);
+  const kp=(l,v,neg)=>`<div class="kpi ${neg?'neg':''}"><span>${l}</span><b>${v}</b></div>`;
+  const warn=f.m<=0?'<div class="fb bad">Баға айнымалы шығыннан үлкен болуы керек, әйтпесе нөлдік нүкте жоқ.</div>':'';
+  let chart='';
+  if(f.price>0&&f.m>0){const xMax=niceMax(Math.max(f.u,f.be||0,10)*1.4),yMax=niceMax(Math.max(f.price*xMax,f.fx+f.vc*xMax)),W=520,H=250,l=62,r=14,t=14,b=34;
+    const X=v=>l+v/xMax*(W-l-r),Y=v=>H-b-v/yMax*(H-t-b);let g='';
+    for(let i=0;i<=4;i++){const yv=yMax*i/4,xv=xMax*i/4;g+=`<line x1="${l}" x2="${W-r}" y1="${Y(yv)}" y2="${Y(yv)}" stroke="var(--line)"/><text x="${l-6}" y="${Y(yv)+4}" text-anchor="end">${fmt(yv)}</text><text x="${X(xv)}" y="${H-b+16}" text-anchor="middle">${fmt(xv)}</text>`;}
+    const bx=f.be?`<circle cx="${X(f.be)}" cy="${Y(f.price*f.be)}" r="6" fill="var(--good)" stroke="var(--surface)" stroke-width="2"/><text x="${Math.min(X(f.be)+8,W-90)}" y="${Y(f.price*f.be)-10}" style="fill:var(--good)">нөлдік нүкте: ${fmt(f.be)}</text>`:'';
+    chart=`<h4 class="bh" style="font-size:1.05rem;margin-top:10px">Нөлдік нүкте: табыс пен шығын</h4><div class="chartbox"><svg viewBox="0 0 ${W} ${H}" role="img" aria-label="Табыс пен шығын графигі">${g}
+      <line x1="${X(0)}" y1="${Y(0)}" x2="${X(xMax)}" y2="${Y(f.price*xMax)}" stroke="var(--blue)" stroke-width="3.5" stroke-linecap="round"/>
+      <line x1="${X(0)}" y1="${Y(f.fx)}" x2="${X(xMax)}" y2="${Y(f.fx+f.vc*xMax)}" stroke="var(--lilac-deep)" stroke-width="3.5" stroke-linecap="round"/>
+      ${bx}<text x="${W-r}" y="${Y(f.price*xMax)+14}" text-anchor="end" style="fill:var(--blue)">Табыс</text><text x="${W-r}" y="${Y(f.fx+f.vc*xMax)-6}" text-anchor="end" style="fill:var(--lilac-deep)">Шығын</text>
+      <text x="${(l+W-r)/2}" y="${H-2}" text-anchor="middle">сатылым, бірлік / ай</text></svg></div>`;}
+  /* жиналған ақша графигі */
+  const arr=sm.arr,lo=Math.min(...arr,0),hi=Math.max(...arr,0),span=(hi-lo)||1,W2=520,H2=250,l2=84,r2=14,t2=16,b2=34,X2=m=>l2+m/sm.N*(W2-l2-r2),Y2=v=>H2-b2-(v-lo)/span*(H2-t2-b2);
+  let g2='';[lo,0,hi].forEach(v=>{g2+=`<line x1="${l2}" x2="${W2-r2}" y1="${Y2(v)}" y2="${Y2(v)}" stroke="${v===0?'var(--muted)':'var(--line)'}" ${v===0?'stroke-dasharray="5 5"':''}/><text x="${l2-6}" y="${Y2(v)+4}" text-anchor="end">${fmt(v)}</text>`;});
+  for(let m=0;m<=sm.N;m+=6)g2+=`<text x="${X2(m)}" y="${H2-b2+16}" text-anchor="middle">${m}</text>`;
+  const pts=arr.map((v,m)=>X2(m).toFixed(1)+','+Y2(v).toFixed(1)).join(' ');
+  const pbm=sm.pb!=null?`<circle cx="${X2(sm.pb)}" cy="${Y2(arr[sm.pb])}" r="6" fill="var(--good)" stroke="var(--surface)" stroke-width="2"/><text x="${Math.min(X2(sm.pb)+8,W2-110)}" y="${Y2(arr[sm.pb])-10}" style="fill:var(--good)">${sm.pb}-ай: өтелді</text>`:'';
+  const cash=`<h4 class="bh" style="font-size:1.05rem;margin-top:14px">Ақшаң қашан қайтады? (24 ай)</h4><div class="scn">${SN.map((n,i)=>`<button class="chip tg ${i===sc?'on':''}" data-act="scn" data-i="${i}" aria-pressed="${i===sc}">${n}</button>`).join('')}</div>
+   <div class="chartbox"><svg viewBox="0 0 ${W2} ${H2}" role="img" aria-label="Жиналған ақша графигі">${g2}<polyline points="${pts}" fill="none" stroke="var(--lilac-deep)" stroke-width="3.5" stroke-linecap="round" stroke-linejoin="round"/>${pbm}<text x="${(l2+W2-r2)/2}" y="${H2-2}" text-anchor="middle">ай</text></svg></div>
+   <div class="fb ${sm.pb!=null?'ok':'bad'}">${sm.pb!=null?`Бастапқы ${fmt(s.total)} ₸ шығын ${sm.pb}-айда өтеледі.`:`24 айда шығын өтелмейді. Бағаны көтеріп, шығынды азайтып немесе сатылымды арттырып көр.`}<small>24-айдағы жиналған нәтиже: ${fmt(arr[sm.N])} ₸. Сатылым әр ай сайын ${+p.growth||0}% өседі деп есептелген.</small></div>`;
+  host.innerHTML=`<div class="kpis">${kp('Бір бірліктен маржа',fmt(f.m)+' ₸',f.m<=0)}${kp('Нөлдік нүкте',f.be?fmt(f.be)+' бірлік':'—')}${kp('Айлық табыс',fmt(f.rev)+' ₸')}${kp('Айлық пайда',fmt(f.profit)+' ₸',f.profit<0)}${kp('Бастапқы шығын',fmt(s.total)+' ₸')}${kp('Өтелу мерзімі',sm.pb!=null?sm.pb+' ай':'24 айдан артық',sm.pb==null)}</div>${warn}${chart}${cash}`;}
+function planText(p){const f=fin(p),s=startup(p),sm=sim(p,1,s.total),gap=Math.max(0,s.total-(+p.own||0));return `${p.name} — бизнес жоспар\n${p.one}\n\nМӘСЕЛЕ\n${p.problem}\n\nШЕШІМ\n${p.solution}\n\nАУДИТОРИЯ\n${p.audience}\n\nЖАРНАМА АРНАЛАРЫ\n${p.channels.join(', ')}\n\nБАСТАПҚЫ ШЫҒЫН\n${s.items.map(x=>x[0]+': '+fmt(x[2])+' ₸').join('\n')}\nРезерв (${s.months} ай): ${fmt(s.reserve)} ₸\nЖАЛПЫ КЕРЕК: ${fmt(s.total)} ₸. Өз қаражат: ${fmt(+p.own||0)} ₸. Жетіспейді: ${fmt(gap)} ₸.\n\nҚАРЖЫ\nБаға: ${fmt(f.price)} ₸; айнымалы шығын: ${fmt(f.vc)} ₸; тұрақты шығын: ${fmt(f.fx)} ₸/ай; сатылым: ${fmt(f.u)}/ай.\nНөлдік нүкте: ${fmt(f.be)} бірлік. Айлық табыс: ${fmt(f.rev)} ₸. Айлық пайда: ${fmt(f.profit)} ₸.\nӨтелу мерзімі: ${sm.pb!=null?sm.pb+' ай':'24 айдан артық'}.\n\nКОМАНДА\n${p.team}\n\nТӘУЕКЕЛДЕР\n${p.risks}\n\n90 КҮНДІК ЖОСПАР\n${p.plan90}`;}
+function planHTML(){const p=L.plan,f=fin(p),s=startup(p),sm=sim(p,1,s.total),own=+p.own||0,gap=Math.max(0,s.total-own);
+  return `<div class="plan"><div><span class="eyebrow">Менің бизнес жоспарым</span><h3>${esc(p.name)}</h3><p class="muted">${esc(p.one)}</p></div>
+   <div class="need"><span>Бастау үшін жалпы қанша керек</span><b>${fmt(s.total)} ₸</b></div>
+   <div class="kpis"><div class="kpi"><span>Нөлдік нүкте</span><b>${fmt(f.be)} бірлік</b></div><div class="kpi"><span>Айлық табыс</span><b>${fmt(f.rev)} ₸</b></div><div class="kpi ${f.profit<0?'neg':''}"><span>Айлық пайда</span><b>${fmt(f.profit)} ₸</b></div><div class="kpi ${sm.pb==null?'neg':''}"><span>Өтелу мерзімі</span><b>${sm.pb!=null?sm.pb+' ай':'24 айдан артық'}</b></div></div>
+   <div><h4>Бастапқы шығындар</h4>${costBars(s)}<div class="fb ${gap>0?'info':'ok'}">${gap>0?`Өз қаражатың ${fmt(own)} ₸. Жетіспейді: ${fmt(gap)} ₸.`:'Өз қаражатың жеткілікті.'}</div></div>
+   <div><h4>Мәселе</h4><p>${esc(p.problem)}</p></div><div><h4>Шешім</h4><p>${esc(p.solution)}</p></div>
+   <div><h4>Аудитория және жарнама</h4><p>${esc(p.audience)}\n${esc(p.channels.join(' · '))}</p></div>
+   <div><h4>Команда</h4><p>${esc(p.team)}</p></div><div><h4>Тәуекелдер</h4><p>${esc(p.risks||'—')}</p></div><div><h4>Алғашқы 90 күн</h4><p>${esc(p.plan90||'—')}</p></div>
+   <div class="acts"><button class="btn solid" data-act="copyplan">Мәтінді көшіру</button><button class="btn" data-act="editplan">Өңдеу</button></div></div>`;}
+function makePlan(){const p=L.plan,f=fin(p),miss=[];
+  if(!p.name.trim())miss.push('атауы');if(!p.problem.trim())miss.push('мәселе');if(!p.solution.trim())miss.push('шешім');if(!p.audience.trim())miss.push('аудитория');
+  if(!p.channels.length)miss.push('жарнама арнасы');if(!(f.price>0&&f.m>0&&f.u>0))miss.push('қаржы (баға > айнымалы шығын)');if(!p.team.trim())miss.push('команда');if(!(startup(p).total>0))miss.push('бастапқы шығын');
+  if(miss.length){sfx('bad');return toast('Толтыр: '+miss.join(', '));}
+  p.made=true;state.plan=p;state.done[7]=true;save();updHead();sfx('win');confetti();$('#lbody').innerHTML=builderHTML();window.scrollTo({top:0,behavior:reduce()?'auto':'smooth'});}
+
+/* ============ Оқиғалар ============ */
+document.addEventListener('click',e=>{
+  const b=e.target.closest('[data-act]');if(!b)return;const a=b.dataset.act,i=parseInt(b.dataset.i,10),k=parseInt(b.dataset.k,10);
+  switch(a){
+   case 'home':sfx('click');go('home');break;
+   case 'tvideo':{const w=$('#vwrap'),bt=$('#tvb');sfx('click');if(w.innerHTML){if(vt){clearInterval(vt);vt=null;}w.innerHTML='';bt.textContent='▶ Видео';}else{w.innerHTML=videoHTML();startVideo();bt.textContent='✕ Видеоны жасыру';w.scrollIntoView({behavior:reduce()?'auto':'smooth',block:'start'});}break;}
+   case 'maze':case 'tomap':sfx('click');go('maze');break;
+   case 'talk':sfx('click');say((tIdx+1)%ROBOT_LINES.length);break;
+   case 'say':say(i);break;
+   case 'sound':state.sound=!state.sound;save();updSound();if(state.sound)sfx('click');break;
+   case 'node':if(isOpen(i)){sfx('click');go('topic-'+(i+1));}else{sfx('lock');toast('Алдымен '+i+'-тақырыпты аяқтау керек');b.classList.add('shk');setTimeout(()=>b.classList.remove('shk'),500);}break;
+   case 'open':if(i>=0&&i<8&&isOpen(i)){sfx('click');go('topic-'+(i+1));}else go('maze');break;
+   case 'next':sfx('click');if(L.step<stepsOf(L.t).length-1){L.step++;renderStep();window.scrollTo(0,0);}break;
+   case 'prev':sfx('click');if(L.step>0){L.step--;renderStep();window.scrollTo(0,0);}else go('home');break;
+   case 'vplay':{const tot=T[L.t].video.scenes.length*SC;if(vp.ms>=tot){vp.ms=0;vp.i=-1;vp.play=true;}else vp.play=!vp.play;drawScene();break;}
+   case 'vrestart':vp.ms=0;vp.i=-1;vp.play=true;drawScene();break;
+   case 'vseek':vp.ms=i*SC;vp.i=-1;vp.play=true;drawScene();break;
+   case 'vseekbar':{const r=b.getBoundingClientRect(),tot=T[L.t].video.scenes.length*SC;vp.ms=Math.max(0,Math.min(tot-1,(e.clientX-r.left)/r.width*tot));vp.i=-1;vp.play=true;drawScene();break;}
+   case 'pick':{const s=L.ts[i];if(!s.checked){s.pick=k;sfx('click');$('#task'+i).outerHTML=taskHTML(i);}break;}
+   case 'ord':{const s=L.ts[i];if(!s.checked&&!s.sel.includes(k)){s.sel.push(k);sfx('click');$('#task'+i).outerHTML=taskHTML(i);}break;}
+   case 'mL':{const s=L.ts[i];if(!s.checked){s.cur=k;sfx('click');$('#task'+i).outerHTML=taskHTML(i);}break;}
+   case 'mR':{const s=L.ts[i];if(!s.checked){if(s.cur==null){toast('Алдымен сол жақтан біреуін таңда');break;}const q=s.map.indexOf(k);if(q>=0)s.map[q]=null;s.map[s.cur]=k;s.cur=null;sfx('click');$('#task'+i).outerHTML=taskHTML(i);}break;}
+   case 'tf':{const s=L.ts[i];if(!s.checked){s.tf[k]=parseInt(b.dataset.v,10);sfx('click');$('#task'+i).outerHTML=taskHTML(i);}break;}
+   case 'clr':{if(L.ts[i].map){L.ts[i].map=L.ts[i].map.map(()=>null);L.ts[i].cur=null;}L.ts[i].sel=[];$('#task'+i).outerHTML=taskHTML(i);break;}
+   case 'check':checkTask(i,false);break;
+   case 'reveal':checkTask(i,true);break;
+   case 'retry':{L.ts[i]=initTask(T[L.t].practice[i]);sfx('click');refreshTask(i);break;}
+   case 'qopt':answerQuiz(k);break;
+   case 'qnext':sfx('click');nextQuiz();break;
+   case 'qretry':sfx('click');startQuiz();$('#lbody').innerHTML=quizHTML();break;
+   case 'bstep':L.bstep=i;sfx('click');$('#lbody').innerHTML=builderHTML();bindBuilder();break;
+   case 'chan':{const c=b.dataset.c,ch=L.plan.channels,x=ch.indexOf(c);if(x>=0)ch.splice(x,1);else ch.push(c);state.plan=L.plan;save();sfx('click');$('#lbody').innerHTML=builderHTML();bindBuilder();break;}
+   case 'idea':{const id=IDEAS[Math.floor(Math.random()*IDEAS.length)],p=L.plan;Object.assign(p,{name:id.name,one:id.one,problem:id.problem,solution:id.solution,audience:p.audience||id.audience});state.plan=p;save();sfx('ok');$('#lbody').innerHTML=builderHTML();bindBuilder();toast('Идея ұсынылды. Өз сөзіңмен өзгертуге болады');break;}
+   case 'preset':{Object.assign(L.plan,PRE[i]);state.plan=L.plan;save();sfx('click');$('#lbody').innerHTML=builderHTML();bindBuilder();break;}
+   case 'scn':L.scn=i;sfx('click');drawFin();break;
+   case 'makeplan':makePlan();break;
+   case 'editplan':L.plan.made=false;L.bstep=0;state.plan=L.plan;save();$('#lbody').innerHTML=builderHTML();bindBuilder();break;
+   case 'copyplan':{const txt=planText(L.plan);if(navigator.clipboard&&navigator.clipboard.writeText){navigator.clipboard.writeText(txt).then(()=>toast('Көшірілді')).catch(()=>toast('Көшіру мүмкін болмады. Мәтінді қолмен белгіле'));}else toast('Көшіру мүмкін болмады. Мәтінді қолмен белгіле');break;}
+  }});
+document.addEventListener('input',e=>{const el=e.target;if(el.classList&&el.classList.contains('tin')&&L){const i=parseInt(el.dataset.i,10);if(L.ts[i])L.ts[i].val=el.value;}});
+document.addEventListener('keydown',e=>{
+  if((e.key==='Enter'||e.key===' ')&&e.target.classList&&e.target.classList.contains('node')){e.preventDefault();e.target.dispatchEvent(new MouseEvent('click',{bubbles:true}));}
+  if(e.key==='Enter'&&e.target.classList&&e.target.classList.contains('tin')){const i=parseInt(e.target.dataset.i,10);if(L&&L.ts[i]&&!L.ts[i].checked)checkTask(i,false);}});
+document.addEventListener('keydown',e=>{});
+
+
+
+
+/* ============ Robo чаты ============ */
+(function(){
+const root=document.createElement('div');root.id='robo';
+root.innerHTML=`<div id="robop" hidden role="dialog" aria-label="Robo"><div class="rh">${robot('')}<span>Robo</span><button id="rx" aria-label="Жабу">✕</button></div><div id="rmsgs" aria-live="polite"></div><div class="rq" id="rq">${['Жасанды интеллект деген не?','Нейрон қалай жұмыс істейді?','Стартап идеясын ұсын'].map(x=>`<button class="chip" type="button">${x}</button>`).join('')}</div><div class="rf"><input id="rin" type="text" autocomplete="off" placeholder="Сұрағыңды жаз…" aria-label="Сұрағыңды жаз…"><button class="btn small solid" id="rgo" type="button">Жіберу</button></div></div><button id="robob" type="button" aria-label="Robo-дан сұра" aria-expanded="false">${robot('float')}</button>`;
+document.body.appendChild(root);
+const q=s=>root.querySelector(s),box=q('#rmsgs'),inp=q('#rin'),pan=q('#robop'),btn=q('#robob');
+let hist=[],busy2=false,sm;
+const SYS='Сен — Robo, «AI Start» курсының (11 сынып: жасанды интеллект, цифрлық сауаттылық, стартап) достық робот-нұсқаушысысың. Кез келген тақырыптағы сұраққа түсінікті, қысқа (6 сөйлемге дейін) жауап бер. Қолданушы қай тілде жазса, сол тілде жауап бер (әдетте қазақша). Markdown белгілерін қолданба. Білмесең, соны ашық айт.';
+function add(c,t){const d=document.createElement('div');d.className='rm '+c;d.textContent=t;box.appendChild(d);box.scrollTop=box.scrollHeight;return d;}
+add('b','Сәлем! Мен — Robo. Кез келген сұрақ қой: курс туралы да, басқа тақырыпта да көмектесемін.');
+async function ask(t){t=t.trim();if(!t||busy2)return;busy2=true;inp.value='';q('#rq').hidden=true;add('u',t);hist.push({role:'user',content:t});const bd=add('b','…');
+  try{if(typeof claude==='undefined')throw {code:'na'};sm=sm||await claude.use('sample');if(!sm)throw {code:'na'};
+    const ms=hist.slice(-9).map(x=>({role:x.role,content:x.content}));while(ms.length>1&&ms[0].role!=='user')ms.shift();ms[0].content=SYS+'\n\nСұхбат:\n'+ms[0].content;
+    const r=await sm(ms,{cache:false,modelTier:'quick',onText:({text})=>{bd.textContent=text;box.scrollTop=box.scrollHeight;}});
+    const a=(r&&r.text)||bd.textContent;bd.textContent=a;hist.push({role:'assistant',content:a});
+  }catch(e){hist.pop();bd.textContent=e&&e.code==='not_granted'?'Чатты қосу үшін рұқсат беру керек. Қайта жазып көр.':e&&e.code==='rate_limited'?'Сәл күте тұр да, қайта сұра.':'Қазір жауап бере алмадым. Чат тек claude.ai-дағы жарияланған сілтеме арқылы ашқанда жұмыс істейді.';}
+  busy2=false;}
+btn.addEventListener('click',()=>{pan.hidden=!pan.hidden;btn.setAttribute('aria-expanded',String(!pan.hidden));if(!pan.hidden)inp.focus();});
+q('#rx').addEventListener('click',()=>{pan.hidden=true;btn.setAttribute('aria-expanded','false');});
+q('#rgo').addEventListener('click',()=>ask(inp.value));
+inp.addEventListener('keydown',e=>{if(e.key==='Enter'){e.preventDefault();ask(inp.value);}});
+q('#rq').addEventListener('click',e=>{const b=e.target.closest('.chip');if(b)ask(b.textContent);});
+})();
+
+updHead();updSound();route();
+</script>
+</body></html>
